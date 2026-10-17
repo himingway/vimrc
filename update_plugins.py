@@ -63,6 +63,11 @@ vim-lastplace https://github.com/farmergreg/vim-lastplace
 
 SOURCE_DIR = path.join(path.dirname(__file__), "pack", "vendor", "start")
 
+# Plugins locked at specific versions for backward compatibility
+LOCKED_PLUGINS = {
+    "copilot.vim": "locked at 1.40.0 for Vim 8.0.1763 compatibility (upstream >= 1.50 requires Vim 9.0+)"
+}
+
 
 def download_zip(github_url):
     """Download repository zip archive, trying HEAD then main then master branch."""
@@ -106,6 +111,9 @@ def update(plugin):
     if len(parts) != 2:
         return
     name, github_url = parts
+    if name in LOCKED_PLUGINS:
+        print(f"Skipping locked plugin '{name}': {LOCKED_PLUGINS[name]}")
+        return
     temp_directory = tempfile.mkdtemp()
     try:
         download_extract_replace(name, github_url, temp_directory, SOURCE_DIR)
