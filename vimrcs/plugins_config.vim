@@ -312,3 +312,37 @@ function! s:CleanTrailingWhitespace() abort
 endfunction
 command! CleanTrailingWS call <SID>CleanTrailingWhitespace()
 nnoremap <silent> <leader>cw :CleanTrailingWS<CR>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Floaterm (terminal management)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Adapt window type: bottom split drawer on Vim 8.0, popup float on Vim 8.2+ / Neovim
+if !has('patch-8.2.0286') && !has('nvim')
+    let g:floaterm_wintype = 'split'
+    let g:floaterm_position = 'botright'
+    let g:floaterm_height = 0.35
+else
+    let g:floaterm_wintype = 'float'
+    let g:floaterm_width = 0.85
+    let g:floaterm_height = 0.85
+    let g:floaterm_title = 'Terminal ($1/$2)'
+endif
+
+let g:floaterm_autoinsert = 1
+let g:floaterm_autoclose = 1
+
+" Function key bindings
+let g:floaterm_keymap_toggle = '<F12>'
+let g:floaterm_keymap_new    = '<F9>'
+let g:floaterm_keymap_prev   = '<F8>'
+let g:floaterm_keymap_next   = '<F10>'
+
+" Leader-based shortcuts
+nnoremap <silent> <leader>tt :FloatermToggle<CR>
+tnoremap <silent> <leader>tt <C-\><C-n>:FloatermToggle<CR>
+nnoremap <silent> <leader>tn :FloatermNew<CR>
+vnoremap <silent> <leader>ts :FloatermSend<CR>
+
+" Quick escape to Terminal-Normal mode to scroll/copy terminal text
+tnoremap <Esc><Esc> <C-\><C-n>

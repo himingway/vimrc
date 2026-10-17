@@ -1,0 +1,31 @@
+" tests for the --silent option
+
+function! Test_01_silent() abort
+  if g:run_in_ci | return | endif
+  Log '# FloatermNew --silent --autoclose=never ls'
+    FloatermNew --silent --autoclose=never ls
+    AssertEqual 1, len(floaterm#buflist#gather())
+    FloatermKill!
+
+  Log '# FloatermNew --silent --autoclose=smart ls'
+    FloatermNew --silent --autoclose=smart ls
+    sleep 200m " otherwise vim8 testing fails
+    AssertEqual 0, len(floaterm#buflist#gather())
+    FloatermKill!
+
+  Log '# FloatermNew --silent --autoclose=smart xxx'
+    FloatermNew --silent --autoclose=smart xxx
+    AssertEqual 1, len(floaterm#buflist#gather())
+    FloatermKill!
+
+  Log '# FloatermNew --silent --autoclose=always ls'
+    FloatermNew --silent --autoclose=always ls
+    sleep 200m " otherwise vim8 testing fails
+    AssertEqual 0, len(floaterm#buflist#gather())
+    FloatermKill!
+
+  FloatermKill!
+  stopinsert
+endfunction
+
+call RunTests()

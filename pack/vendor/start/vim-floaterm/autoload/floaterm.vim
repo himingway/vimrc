@@ -1,0 +1,344 @@
+" vim:sw=2:
+" ============================================================================
+" FileName: floaterm.vim
+" Author: voldikss <dyzplus@gmail.com>
+" GitHub: https://github.com/voldikss
+" ============================================================================
+
+" ----------------------------------------------------------------------------
+" wrapper function for `floaterm#new()` and `floaterm#update()` since they
+" share the same argument: `config`
+" ----------------------------------------------------------------------------
+function! floaterm#run(action, bang, rangeargs, cmdargs) abort
+  let [cmd, config] = floaterm#cmdline#parse(a:cmdargs)
+  if a:action == 'new'
+    let [visualmode, range, line1, line2] = a:rangeargs
+    if range > 0
+      let lines = floaterm#util#get_selected_text(visualmode, range, line1, line2)
+    endif
+    let bufnr = floaterm#new(a:bang, cmd, {}, config)
+    if range > 0 && !empty(lines)
+      call floaterm#terminal#send(bufnr, lines)
+    endif
+  elseif a:action == 'update'
+    call floaterm#update(a:bang, config)
+  endif
+endfunction
+
+" create a floaterm. return bufnr of the terminal
+" argument `jobopts` is passed by user in the case using this function as API
+function! floaterm#new(bang, cmd, jobopts, config) abort
+  let env = floaterm#util#setenv()
+  let vim_version = floaterm#util#vim_version()
+  if vim_version[0] == 'nvim' && vim_version[1] <= '0.4.4'
+    for [name, value] in items(env)
+      call setenv(name, value)
+    endfor
+  else
+    call floaterm#util#deep_extend(a:jobopts, {'env': env})
+  endif
+  if !empty(a:cmd)
+    let wrappers_path = globpath(&runtimepath, 'autoload/floaterm/wrapper/*vim', 0, 1)
+    let wrappers = map(wrappers_path, "substitute(fnamemodify(v:val, ':t'), '\\..\\{-}$', '', '')")
+    let maybe_wrapper = split(a:cmd, '\s')[0]
+    if index(wrappers, maybe_wrapper) >= 0
+      try
+        let [shell, shellslash, shellcmdflag, shellxquote] = floaterm#util#use_sh_or_cmd()
+        let WrapFunc = function(printf('floaterm#wrapper#%s#', maybe_wrapper))
+        " NOTE: a:jobopts and a:config can be changed in WrapFunc
+        let [send2shell, newcmd] = WrapFunc(a:cmd, a:jobopts, a:config)
+        if send2shell
+          let bufnr = floaterm#terminal#open(-1, g:floaterm_shell, a:jobopts, a:config)
+          call floaterm#terminal#send(bufnr, [newcmd])
+        else
+          let bufnr = floaterm#terminal#open(-1, newcmd, a:jobopts, a:config)
+        endif
+      finally
+        let [&shell, &shellslash, &shellcmdflag, &shellxquote] = [shell, shellslash, shellcmdflag, shellxquote]
+      endtry
+    elseif a:bang
+      let bufnr = floaterm#terminal#open(-1, g:floaterm_shell, a:jobopts, a:config)
+      call floaterm#terminal#send(bufnr, [a:cmd])
+    else
+      let bufnr = floaterm#terminal#open(-1, a:cmd, a:jobopts, a:config)
+    endif
+  else
+    let bufnr = floaterm#terminal#open(-1, g:floaterm_shell, a:jobopts, a:config)
+  endif
+  return bufnr
+endfunction
+
+" ----------------------------------------------------------------------------
+" resolve bufnr from a [count] or a name argument
+" ----------------------------------------------------------------------------
+" Strip the `--name=` prefix so that both `FloatermKill ft1` and
+" `FloatermKill --name=ft1` are accepted.
+function! s:parse_name(name) abort
+  return a:name =~# '^--name=' ? a:name[len('--name='):] : a:name
+endfunction
+
+" Returns the bufnr for `a:bufnr`/`a:name`: 0 if no target was given, or -1
+" if the given count doesn't refer to a floaterm buffer or no floaterm
+" matches the name.
+function! s:resolve_bufnr(bufnr, name) abort
+  if a:bufnr != 0
+    " the buffer being created is registered in the buflist before its
+    " filetype is set, so use the buflist rather than the filetype here
+    if index(floaterm#buflist#gather(), a:bufnr) == -1
+      return -1
+    endif
+    return a:bufnr
+  endif
+  let name = s:parse_name(a:name)
+  if empty(name)
+    return 0
+  endif
+  return floaterm#terminal#get_bufnr(name)
+endfunction
+
+function! s:not_found_msg(bufnr, name) abort
+  if a:bufnr != 0
+    return printf('No floaterm with bufnr %d', a:bufnr)
+  endif
+  let name = s:parse_name(a:name)
+  if empty(name)
+    return 'No more floaterms'
+  endif
+  return 'No floaterm found with name: ' . name
+endfunction
+
+" ----------------------------------------------------------------------------
+" toggle on/off the floaterm named `name`
+" ----------------------------------------------------------------------------
+function! floaterm#toggle(bang, bufnr, name)  abort
+  if a:bang
+    let found_winnr = floaterm#window#find()
+    if found_winnr > 0
+      call floaterm#hide(1, 0, '')
+    else
+      let buffers = floaterm#buflist#gather()
+      if empty(buffers)
+        let curr_bufnr = floaterm#new(v:true, '', {}, {})
+      else
+        call floaterm#show(1, 0, '')
+      endif
+    endif
+    return
+  endif
+
+  let bufnr = s:resolve_bufnr(a:bufnr, a:name)
+
+  if bufnr == -1
+    let name = s:parse_name(a:name)
+    if empty(name)
+      call floaterm#util#show_msg(s:not_found_msg(a:bufnr, a:name), 'error')
+    else
+      call floaterm#new(a:bang, '', {}, {'name': name})
+    endif
+  elseif bufnr == 0
+    if &filetype == 'floaterm'
+      call floaterm#window#hide(bufnr('%'))
+    else
+      let found_winnr = floaterm#window#find()
+      if found_winnr > 0
+        execute found_winnr . 'wincmd w'
+      else
+        call floaterm#curr()
+      endif
+    endif
+  else
+    if bufnr == bufnr('%')
+      call floaterm#window#hide(bufnr)
+    elseif bufwinnr(bufnr) > -1
+      execute bufwinnr(bufnr) . 'wincmd w'
+    else
+      call floaterm#terminal#open_existing(bufnr)
+    endif
+  endif
+endfunction
+
+" ----------------------------------------------------------------------------
+" update the attributes of a floaterm
+" bang: apply the update to every floaterm
+" ----------------------------------------------------------------------------
+function! floaterm#update(bang, config) abort
+  if a:bang
+    let buffers = floaterm#buflist#gather()
+    if empty(buffers)
+      call floaterm#util#show_msg('No more floaterms', 'warning')
+      return
+    endif
+    " remember the current floaterm so it can be restored at the end
+    let current = bufnr('%')
+    let current_winnr = winnr()
+    let cur_bufnr = &filetype ==# 'floaterm' ? current : floaterm#buflist#curr()
+    for bufnr in buffers
+      call s:update_one(bufnr, a:config)
+    endfor
+    " reopen the floaterm that was current before the update, if any
+    if cur_bufnr > 0 && bufwinnr(cur_bufnr) == -1
+      call floaterm#terminal#open_existing(cur_bufnr)
+    endif
+    return
+  endif
+
+  if &filetype !=# 'floaterm'
+    call floaterm#util#show_msg('You have to be in a floaterm window to change window config.', 'error')
+    return
+  endif
+  call s:update_one(bufnr('%'), a:config)
+endfunction
+
+function! s:update_one(bufnr, config) abort
+  call floaterm#window#hide(a:bufnr)
+  call floaterm#config#set_all(a:bufnr, a:config)
+  call floaterm#terminal#open_existing(a:bufnr)
+endfunction
+
+function! floaterm#next()  abort
+  let next_bufnr = floaterm#buflist#next()
+  if next_bufnr == -1
+    let msg = 'No more floaterms'
+    call floaterm#util#show_msg(msg, 'warning')
+  else
+    call floaterm#terminal#open_existing(next_bufnr)
+  endif
+endfunction
+
+function! floaterm#prev()  abort
+  let prev_bufnr = floaterm#buflist#prev()
+  if prev_bufnr == -1
+    let msg = 'No more floaterms'
+    call floaterm#util#show_msg(msg, 'warning')
+  else
+    call floaterm#terminal#open_existing(prev_bufnr)
+  endif
+endfunction
+
+function! floaterm#curr() abort
+  let curr_bufnr = floaterm#buflist#curr()
+  if curr_bufnr == -1
+    let curr_bufnr = floaterm#new(v:true, '', {}, {})
+  else
+    call floaterm#terminal#open_existing(curr_bufnr)
+  endif
+  return curr_bufnr
+endfunction
+
+function! floaterm#first() abort
+  let first_bufnr = floaterm#buflist#first()
+  if first_bufnr == -1
+    call floaterm#util#show_msg('No more floaterms', 'warning')
+  else
+    call floaterm#terminal#open_existing(first_bufnr)
+  endif
+endfunction
+
+function! floaterm#last() abort
+  let last_bufnr = floaterm#buflist#last()
+  if last_bufnr == -1
+    call floaterm#util#show_msg('No more floaterms', 'warning')
+  else
+    call floaterm#terminal#open_existing(last_bufnr)
+  endif
+endfunction
+
+function! floaterm#kill(bang, bufnr, name) abort
+  if a:bang
+    for bufnr in floaterm#buflist#gather()
+      call floaterm#terminal#kill(bufnr)
+    endfor
+    return
+  endif
+
+  let bufnr = s:resolve_bufnr(a:bufnr, a:name)
+  if bufnr == 0
+    let bufnr = floaterm#buflist#curr()
+  endif
+
+  if bufnr > 0
+    call floaterm#terminal#kill(bufnr)
+  else
+    call floaterm#util#show_msg(s:not_found_msg(a:bufnr, a:name), 'error')
+  endif
+endfunction
+
+function! floaterm#show(bang, bufnr, name) abort
+  if a:bang
+    call floaterm#hide(1, 0, '')
+    for bufnr in floaterm#buflist#gather()
+      call floaterm#terminal#open_existing(bufnr)
+    endfor
+    return
+  endif
+
+  let bufnr = s:resolve_bufnr(a:bufnr, a:name)
+  if bufnr == 0
+    let bufnr = floaterm#buflist#curr()
+  endif
+
+  if bufnr > 0
+    call floaterm#terminal#open_existing(bufnr)
+  else
+    call floaterm#util#show_msg(s:not_found_msg(a:bufnr, a:name), 'error')
+  endif
+endfunction
+
+function! floaterm#hide(bang, bufnr, name) abort
+  if a:bang
+    for bufnr in floaterm#buflist#gather()
+      call floaterm#window#hide(bufnr)
+    endfor
+    return
+  endif
+
+  let bufnr = s:resolve_bufnr(a:bufnr, a:name)
+  if bufnr == 0
+    " hide the floaterm in the current window if there is one, otherwise
+    " act on the current floaterm, like :FloatermShow and :FloatermKill do
+    if &filetype ==# 'floaterm'
+      let bufnr = bufnr('%')
+    else
+      let bufnr = floaterm#buflist#curr()
+    endif
+  endif
+
+  if bufnr > 0
+    call floaterm#window#hide(bufnr)
+  else
+    call floaterm#util#show_msg(s:not_found_msg(a:bufnr, a:name), 'error')
+  endif
+endfunction
+
+function! floaterm#send(bang, visualmode, range, line1, line2, argstr) abort
+  let [cmd, config] = floaterm#cmdline#parse(a:argstr)
+  let termname = get(config, 'name', '')
+  if !empty(termname)
+    let bufnr = floaterm#terminal#get_bufnr(termname)
+    if bufnr == -1
+      call floaterm#util#show_msg('No floaterm found with name: ' . termname, 'error')
+      return
+    endif
+  else
+    let bufnr = floaterm#buflist#curr()
+    if bufnr == -1
+      call floaterm#util#show_msg('No more floaterms', 'warning')
+      return
+    endif
+  endif
+  if !empty(cmd)
+    call floaterm#terminal#send(bufnr, [cmd])
+    return
+  endif
+
+  let lines = floaterm#util#get_selected_text(a:visualmode, a:range, a:line1, a:line2)
+  if empty(lines)
+    call floaterm#util#show_msg('No lines were selected', 'error')
+    return
+  endif
+
+  if a:bang
+    let lines = floaterm#util#leftalign_lines(lines)
+  endif
+  call floaterm#terminal#send(bufnr, lines)
+endfunction

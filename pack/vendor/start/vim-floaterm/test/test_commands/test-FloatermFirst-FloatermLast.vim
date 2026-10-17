@@ -1,0 +1,39 @@
+" tests for :FloatermFirst and :FloatermLast
+
+function! Test_01_first_last() abort
+  FloatermNew
+  let bufnr1 = bufnr('%')
+  FloatermNew
+  let bufnr2 = bufnr('%')
+  FloatermNew
+  let bufnr3 = bufnr('%')
+  FloatermNew
+  let bufnr4 = bufnr('%')
+
+  Log '# Execute `:FloatermFirst`'
+    FloatermFirst
+    AssertEqual bufnr1, bufnr('%')
+
+  Log '# Execute `:FloatermLast`'
+    FloatermLast
+    AssertEqual bufnr4, bufnr('%')
+
+  Log '# Kill the first floaterm and execute `:FloatermFirst`'
+    " otherwise vim8 testing fails
+    FloatermHide
+    execute bufnr1 . 'FloatermKill'
+    FloatermFirst
+    AssertEqual bufnr2, bufnr('%')
+
+  Log '# Kill the last floaterm and execute `:FloatermLast`'
+    " otherwise vim8 testing fails
+    FloatermHide
+    execute bufnr4 . 'FloatermKill'
+    FloatermLast
+    AssertEqual bufnr3, bufnr('%')
+
+  FloatermKill!
+  stopinsert
+endfunction
+
+call RunTests()

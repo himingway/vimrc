@@ -1,0 +1,87 @@
+name: CI
+on: [push]
+
+jobs:
+  tests:
+    name: Tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        neovim: [true, false]
+        version: [nightly, stable]
+        exclude:
+          - neovim: false
+            version: stable
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Neovim
+        uses: rhysd/action-setup-vim@v1
+        id: vim
+        with:
+          neovim: ${{ matrix.neovim }}
+          version: ${{ matrix.version }}
+      - name: Install python
+        uses: actions/setup-python@v1
+      - name: Config git
+        run: |
+          git config --global user.email "dyzplus@gmail.com"
+          git config --global user.name "voldikss"
+      - name: Checkout vim-floaterm
+        uses: actions/checkout@v2
+      - name: Checkout clap-floaterm
+        uses: actions/checkout@v2
+        with:
+          repository: voldikss/clap-floaterm
+          path: clap-floaterm
+      - name: Checkout fzf-floaterm
+        uses: actions/checkout@v2
+        with:
+          repository: voldikss/fzf-floaterm
+          path: fzf-floaterm
+      - name: Checkout LeaderF-floaterm
+        uses: actions/checkout@v2
+        with:
+          repository: voldikss/LeaderF-floaterm
+          path: LeaderF-floaterm
+      - name: Checkout asyncrun.vim
+        uses: actions/checkout@v2
+        with:
+          repository: skywind3000/asyncrun.vim
+          path: asyncrun.vim
+      - name: Checkout asyncrun.extra
+        uses: actions/checkout@v2
+        with:
+          repository: skywind3000/asyncrun.extra
+          path: asyncrun.extra
+      - name: Run tests
+        env:
+          TERM: xterm
+          VIM_EXEC: ${{ steps.vim.outputs.executable }}
+        run: |
+          $VIM_EXEC --version
+          if [[ $VIM_EXEC == *nvim* ]]
+          then
+              HEADLESS=--headless
+          else
+              HEADLESS=
+          fi
+          for f in `find test/*/*.vim | sort`
+          do
+              if ! FLOATERM_TEST_FILE="$f" $VIM_EXEC $HEADLESS -u test/vimrc \
+                  -c 'source test/run.vim' -c 'qa!' > /dev/null 2>&1
+              then
+                  echo "Failed at $f"
+                  FLOATERM_TEST_FILE="$f" $VIM_EXEC $HEADLESS -u test/vimrc \
+                      -c 'source test/run.vim' -c 'qa!' 2>&1
+                  exit 1
+              fi
+          done
+
+  vint:
+    name: Run vint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+      - run: pip install 'setuptools<81' vim-vint
+      - run: vint --error --verbose --enable-neovim --color --style ./autoload ./plugin

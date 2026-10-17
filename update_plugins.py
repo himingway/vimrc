@@ -61,6 +61,7 @@ vim-lastplace https://github.com/farmergreg/vim-lastplace
 verilog_systemverilog.vim https://github.com/vhda/verilog_systemverilog.vim
 LargeFile https://github.com/vim-scripts/LargeFile
 LeaderF https://github.com/Yggdroot/LeaderF
+vim-floaterm https://github.com/voldikss/vim-floaterm
 """.strip()
 
 SOURCE_DIR = path.join(path.dirname(__file__), "pack", "vendor", "start")

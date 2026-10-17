@@ -1,0 +1,33 @@
+" tests for g:floaterm_opener
+
+function! Test_01_opener() abort
+  Log '# floaterm test.txt'
+    let original_winid = win_getid()
+    silent !touch test.txt
+    FloatermNew
+    FloatermHide
+    FloatermSend floaterm test.txt
+    sleep 500m
+    Log expand('%')
+    AssertEqual 'test.txt',expand('%:t')
+    Assert !IsInFloatermBuffer()
+    silent !rm test.txt
+
+  Log '# git commit'
+    let g:floaterm_opener = 'split'
+    let pwd = $PWD
+    silent execute printf('!touch %s/afile && git add afile', pwd)
+    FloatermNew git commit
+    sleep 500m
+    AssertEqual &ft, 'gitcommit'
+    silent execute printf('!cd %s && rm afile && git add afile', pwd)
+
+  Log '# set g:floaterm_opener to empty'
+    let g:floaterm_opener = ''
+    FloatermNew
+
+  FloatermKill!
+  stopinsert
+endfunction
+
+call RunTests()
