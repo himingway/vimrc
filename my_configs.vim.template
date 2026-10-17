@@ -121,6 +121,18 @@ nnoremap <silent> <leader>fn :let @+=expand('%:t')<CR>:echo "Copied filename: " 
 " --- NERDTree Settings ---
 let g:NERDTreeShowHidden = 1
 
+" Prevent other buffers from accidentally opening inside the NERDTree window
+" (Vim 8.0 compatible: avoids winnr('h') which was only introduced in Vim 8.1.1140)
+function! s:PreventNERDTreeBufReplace() abort
+    let l:is_tree_win = (exists('g:NERDTreeWinPos') && g:NERDTreeWinPos ==# 'right') ? (winnr() == winnr('$')) : (winnr() == 1)
+    if l:is_tree_win && bufname('#') =~# 'NERD_tree_\d\+' && bufname('%') !~# 'NERD_tree_\d\+' && winnr('$') > 1
+        let l:saved_buf = bufnr('%')
+        buffer#
+        wincmd w
+        execute 'buffer' l:saved_buf
+    endif
+endfunction
+
 " Auto-open NERDTree only if not in diff mode or git commit; focus main window
 augroup nerd_tree_auto
     autocmd!
@@ -128,8 +140,7 @@ augroup nerd_tree_auto
     " Exit Vim if NERDTree is the only remaining window in the tab
     autocmd BufEnter * if tabpagenr('$') == 1 && winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | quit | endif
     " Prevent other buffers from opening inside the NERDTree window
-    autocmd BufEnter * if winnr() == winnr('h') && bufname('#') =~ 'NERD_tree_\d\+' && bufname('%') !~ 'NERD_tree_\d\+' && winnr('$') > 1 |
-        \ let b:saved_buf = bufnr() | buffer# | execute "normal! \<C-W>w" | execute 'buffer' . b:saved_buf | endif
+    autocmd BufEnter * call s:PreventNERDTreeBufReplace()
     " Mirror NERDTree across newly opened tabs
     autocmd BufWinEnter * if &buftype != 'quickfix' && getcmdwintype() == '' | silent! NERDTreeMirror | endif
 augroup END
