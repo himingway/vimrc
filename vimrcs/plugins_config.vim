@@ -43,7 +43,7 @@ map <leader>o :BufExplorer<cr>
 " => MRU plugin
 """"""""""""""""""""""""""""""
 let MRU_Max_Entries = 400
-map <leader>f :MRU<CR>
+map <leader>m :MRU<CR>
 
 
 """"""""""""""""""""""""""""""
@@ -171,6 +171,8 @@ let g:ale_linters = {
 \   'python': ['ruff', 'flake8'],
 \   'go': ['golangci-lint', 'go'],
 \   'rust': ['cargo'],
+\   'verilog': ['verilator'],
+\   'verilog_systemverilog': ['verilator'],
 \}
 
 nmap <silent> <leader>a <Plug>(ale_next_wrap)
@@ -206,11 +208,67 @@ xnoremap <leader>v :GBrowse!<CR>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Copilot
+" => LargeFile (protect against freeze on EDA logs/waveforms)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Enable copilot by default if installed, without hijacking Tab
-let g:copilot_no_tab_map = v:true
-imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
+" Disable syntax highlighting, undo, swapfile for files >= 50MB
+let g:LargeFile = 50
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Verilog / SystemVerilog (vhda/verilog_systemverilog.vim)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Disable eos indentation so closing ');' aligns with module/task/function header
+let g:verilog_disable_indent_lst = 'eos'
+
+" Navigation mappings for Verilog / SystemVerilog buffers
+augroup VerilogNavigation
+    autocmd!
+    autocmd FileType verilog,verilog_systemverilog,systemverilog nnoremap <buffer><silent> <leader>i :VerilogFollowInstance<CR>
+    autocmd FileType verilog,verilog_systemverilog,systemverilog nnoremap <buffer><silent> <leader>I :VerilogFollowPort<CR>
+    autocmd FileType verilog,verilog_systemverilog,systemverilog nnoremap <buffer><silent> <leader>u :VerilogGotoInstanceStart<CR>
+augroup END
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Tabular (code alignment)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Visual mode alignments (especially handy for RTL port lists and assignments)
+vnoremap <leader>a= :Tabularize /=<CR>
+vnoremap <leader>a< :Tabularize /<=<CR>
+vnoremap <leader>a: :Tabularize /:<CR>
+vnoremap <leader>a, :Tabularize /,<CR>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => LeaderF (fast fuzzy search)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:Lf_ShortcutF = '<leader>ff'
+let g:Lf_ShortcutB = '<leader>fb'
+noremap <leader>fm :Leaderf mru<CR>
+noremap <leader>ft :Leaderf bufTag<CR>
+noremap <leader>fl :Leaderf line<CR>
+noremap <leader>fg :Leaderf rg<CR>
+
+" Window position: use modern popup in Vim 8.1.1615+ / Neovim, bottom split in Vim 8.0.1763
+if exists('*popup_create') || has('nvim-0.4.2')
+    let g:Lf_WindowPosition = 'popup'
+    let g:Lf_PreviewInPopup = 1
+else
+    let g:Lf_WindowPosition = 'bottom'
+    let g:Lf_PreviewInPopup = 0
+endif
+
+let g:Lf_HideHelp = 1
+let g:Lf_UseCache = 1
+let g:Lf_UseVersionControlTool = 1
+let g:Lf_IgnoreCurrentBufferName = 1
+let g:Lf_ShowDevIcons = 0
+
+" Ignore version control, build dirs, and EDA simulation/waveform artifacts
+let g:Lf_WildIgnore = {
+    \ 'dir': ['.svn', '.git', '.hg', 'csrc', '*.daidir', 'work', 'INCA_libs', 'AN.DB', 'DVEfiles', '__pycache__', 'build', 'dist'],
+    \ 'file': ['*.sw?', '~$*', '*.bak', '*.exe', '*.o', '*.so', '*.py[co]', '*.fsdb', '*.vcd', '*.vpd', '*.wlf', '*.log', 'novas.*']
+    \ }
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

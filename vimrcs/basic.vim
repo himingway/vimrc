@@ -72,12 +72,13 @@ endif
 " Turn on the Wild menu
 set wildmenu
 
-" Ignore compiled and temporary files
+" Ignore compiled, temporary, and EDA simulation / waveform files
 set wildignore=*.o,*~,*.pyc,*/node_modules/*,*/__pycache__/*,*.swp,*.zip,*.tar.gz
+set wildignore+=*.fsdb,*.vcd,*.vpd,*.wlf,*.log,simv*,novas.*,synopsys_sim.setup
 if has("win16") || has("win32") || has("win64")
     set wildignore+=.git\*,.hg\*,.svn\*
 else
-    set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
+    set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store,*/csrc/*,*/*.daidir/*,*/INCA_libs/*,*/work/*
 endif
 
 " Always show current position

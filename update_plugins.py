@@ -56,17 +56,17 @@ vim-indent-guides https://github.com/nathanaelkane/vim-indent-guides
 mru.vim https://github.com/vim-scripts/mru.vim
 editorconfig-vim https://github.com/editorconfig/editorconfig-vim
 dracula https://github.com/dracula/vim
-copilot.vim https://github.com/github/copilot.vim
 tabular https://github.com/godlygeek/tabular
 vim-lastplace https://github.com/farmergreg/vim-lastplace
+verilog_systemverilog.vim https://github.com/vhda/verilog_systemverilog.vim
+LargeFile https://github.com/vim-scripts/LargeFile
+LeaderF https://github.com/Yggdroot/LeaderF
 """.strip()
 
 SOURCE_DIR = path.join(path.dirname(__file__), "pack", "vendor", "start")
 
-# Plugins locked at specific versions for backward compatibility
-LOCKED_PLUGINS = {
-    "copilot.vim": "locked at 1.40.0 for Vim 8.0.1763 compatibility (upstream >= 1.50 requires Vim 9.0+)"
-}
+# Plugins locked at specific versions for backward compatibility (name: reason)
+LOCKED_PLUGINS = {}
 
 
 def download_zip(github_url):
