@@ -23,7 +23,7 @@ function! s:on_floaterm_create(bufnr) abort
     " hiding it (e.g. `<C-w>w`), used by the smart mode of
     " `g:floaterm_autoinsert`. `BufLeave` alone suffices: switching windows
     " always changes the current buffer as well
-    autocmd BufLeave <buffer> call floaterm#window#record_cursor(bufnr())
+    autocmd BufLeave <buffer> call floaterm#window#record_cursor(bufnr('%'))
     execute printf(
           \ 'autocmd BufHidden,BufWipeout <buffer=%s> call floaterm#window#hide(%s)',
           \ a:bufnr,

@@ -86,13 +86,25 @@ This document records all modifications, bug fixes, and architectural adjustment
 
 ---
 
-## 6. Terminal Emulation Fallback (`vim-floaterm`)
-* **Problem**:
+## 6. Terminal Emulation Fallback & BufLeave Fix (`vim-floaterm`)
+* **Problem 1 (Popup vs Split)**:
   * Floating popups (`popupwin`) were introduced in Vim 8.1.1700+.
   * On Vim 8.0 (`8.0.1763`), `has('patch-8.1.1700')` is `0`, so floating window dimensions (`--width=0.8 --height=0.8`) cannot use popup APIs.
+* **Problem 2 (`BufLeave` & `E119: Not enough arguments for function: bufnr`)**:
+  * In `vim-floaterm`, `terminal.vim` registered an autocommand:
+    ```vim
+    autocmd BufLeave <buffer> call floaterm#window#record_cursor(bufnr())
+    ```
+  * In Vim 8.0, `bufnr()` requires at least one argument (e.g. `bufnr('%')`). Bram only made the argument optional in newer Vim versions.
+  * When switching focus from the terminal to another buffer/window, Vim 8.0 threw:
+    ```text
+    Error detected while processing BufLeave Auto commands for "<buffer=3>":
+    E119: Not enough arguments for function: bufnr
+    ```
 * **Fix**:
   * Leveraged `v8.0`'s native terminal channel support (`+terminal`).
   * Configured `vim-floaterm` with automatic fallback to split-window terminal when floating windows are unavailable, mapped to `F12` / `<leader>tt`.
+  * Replaced `bufnr()` with backwards-compatible `bufnr('%')` in `pack/vendor/start/vim-floaterm/autoload/floaterm/terminal.vim`, resolving the `BufLeave` E119 error completely.
 
 ---
 
