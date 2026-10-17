@@ -140,17 +140,17 @@ let g:lightline = {
       \   'right': [ [ 'lineinfo' ], ['percent'] ]
       \ },
       \ 'component': {
-      \   'readonly': '%{&filetype=="help"?"":&readonly?"🔒":""}',
+      \   'readonly': '%{&filetype=="help"?"":&readonly?"\ue0a2":""}',
       \   'modified': '%{&filetype=="help"?"":&modified?"+":&modifiable?"":"-"}',
-      \   'fugitive': '%{exists("*FugitiveHead")?FugitiveHead():""}'
+      \   'fugitive': '%{exists("*FugitiveHead") && ""!=FugitiveHead() ? "\ue0a0 " . FugitiveHead() : ""}'
       \ },
       \ 'component_visible_condition': {
       \   'readonly': '(&filetype!="help"&& &readonly)',
       \   'modified': '(&filetype!="help"&&(&modified||!&modifiable))',
       \   'fugitive': '(exists("*FugitiveHead") && ""!=FugitiveHead())'
       \ },
-      \ 'separator': { 'left': ' ', 'right': ' ' },
-      \ 'subseparator': { 'left': ' ', 'right': ' ' }
+      \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
+      \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" }
       \ }
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -262,7 +262,8 @@ let g:Lf_HideHelp = 1
 let g:Lf_UseCache = 1
 let g:Lf_UseVersionControlTool = 1
 let g:Lf_IgnoreCurrentBufferName = 1
-let g:Lf_ShowDevIcons = 0
+let g:Lf_ShowDevIcons = 1
+let g:Lf_StlSeparator = { 'left': "\ue0b0", 'right': "\ue0b2" }
 
 " Ignore version control, build dirs, and EDA simulation/waveform artifacts
 let g:Lf_WildIgnore = {

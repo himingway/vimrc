@@ -15,9 +15,8 @@ fi
 
 echo "=================================================="
 echo "Installing coding fonts to: $TARGET_DIR"
-echo "  - JetBrains Mono NL (No Ligatures, RTL/EDA recommended)"
-echo "  - JetBrains Mono (Standard)"
-echo "  - Hack"
+echo "  - JetBrainsMonoNL Nerd Font (No Ligatures + Dev Icons for LeaderF/Lightline)"
+echo "  - Hack Nerd Font (Dev Icons for LeaderF/Lightline)"
 echo "=================================================="
 
 mkdir -p "$TARGET_DIR"
@@ -40,7 +39,7 @@ fi
 if command -v fc-list >/dev/null 2>&1; then
     echo ""
     echo "Installed fonts verified by fontconfig:"
-    fc-list : family | grep -E "JetBrains Mono|Hack" | sort -u | sed 's/^/  ✓ /'
+    fc-list : family | grep -iE "JetBrainsMono.*Nerd|Hack.*Nerd" | sort -u | head -n 10 | sed 's/^/  ✓ /'
 fi
 
 echo ""
