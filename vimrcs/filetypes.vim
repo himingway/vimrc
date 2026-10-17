@@ -9,8 +9,6 @@ augroup vimrc_filetypes
     " Python
     " ----------------------------------------------------
     autocmd FileType python syn keyword pythonDecorator True None False self
-    autocmd FileType python nnoremap <buffer> <leader>1 /class <cr>
-    autocmd FileType python nnoremap <buffer> <leader>2 /def <cr>
     autocmd FileType python nnoremap <buffer> <leader>C ?class <cr>
     autocmd FileType python nnoremap <buffer> <leader>D ?def <cr>
 

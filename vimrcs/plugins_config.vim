@@ -148,7 +148,7 @@ let g:lightline = {
       \ 'active': {
       \   'left': [ ['mode', 'paste'],
       \             ['fugitive', 'readonly', 'filename', 'modified'] ],
-      \   'right': [ [ 'lineinfo' ], ['percent'] ]
+      \   'right': [ [ 'lineinfo' ], ['percent'], ['fileformat', 'fileencoding', 'filetype'] ]
       \ },
       \ 'component': {
       \   'readonly': '%{&filetype=="help"?"":&readonly?"\ue0a2":""}',
@@ -384,3 +384,47 @@ let g:DirDiffExcludes = ".git,work,csrc,*.daidir,*.o,*.so,novas.*,*.fsdb,*.vcd,*
 let g:DirDiffIgnore = "Id:.*$"
 let g:DirDiffSort = 1
 let g:DirDiffWindowSize = 14
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => vim-buftabline (IDE-like top visual buffer tabs)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Display ordinal numbers (1, 2, 3...) from left to right
+let g:buftabline_numbers = 2
+
+" Show + indicator for modified/unsaved files
+let g:buftabline_indicators = 1
+
+" Show clean separators between tabs
+let g:buftabline_separators = 1
+
+" Always show the tabline at top like modern IDEs
+let g:buftabline_show = 2
+
+" Jump directly to visual tab 1..10 with <leader>1 .. <leader>0
+nmap <leader>1 <Plug>BufTabLine.Go(1)
+nmap <leader>2 <Plug>BufTabLine.Go(2)
+nmap <leader>3 <Plug>BufTabLine.Go(3)
+nmap <leader>4 <Plug>BufTabLine.Go(4)
+nmap <leader>5 <Plug>BufTabLine.Go(5)
+nmap <leader>6 <Plug>BufTabLine.Go(6)
+nmap <leader>7 <Plug>BufTabLine.Go(7)
+nmap <leader>8 <Plug>BufTabLine.Go(8)
+nmap <leader>9 <Plug>BufTabLine.Go(9)
+nmap <leader>0 <Plug>BufTabLine.Go(10)
+
+" Cycle through tabs with Ctrl-PageDown / Ctrl-PageUp
+nnoremap <silent> <C-PageDown> :bnext<CR>
+nnoremap <silent> <C-PageUp> :bprevious<CR>
+
+" Aesthetic highlights for buftabline matching Gruvbox
+function! s:SetupBufTabLineColors() abort
+    hi BufTabLineCurrent cterm=bold gui=bold ctermfg=223 ctermbg=239 guifg=#ebdbb2 guibg=#504945
+    hi BufTabLineHidden  cterm=NONE gui=NONE ctermfg=246 ctermbg=237 guifg=#a89984 guibg=#3c3836
+    hi BufTabLineActive  cterm=NONE gui=NONE ctermfg=214 ctermbg=238 guifg=#fabd2f guibg=#3c3836
+    hi BufTabLineFill    cterm=NONE gui=NONE ctermfg=241 ctermbg=235 guifg=#665c54 guibg=#282828
+endfunction
+augroup BufTabLineColors
+    autocmd!
+    autocmd ColorScheme,VimEnter * call s:SetupBufTabLineColors()
+augroup END

@@ -65,6 +65,7 @@ vim-floaterm https://github.com/voldikss/vim-floaterm
 tagbar https://github.com/preservim/tagbar
 vim-dirdiff https://github.com/will133/vim-dirdiff
 vim-log-highlighting https://github.com/MTDL9/vim-log-highlighting
+vim-buftabline https://github.com/ap/vim-buftabline
 """.strip()
 
 SOURCE_DIR = path.join(path.dirname(__file__), "pack", "vendor", "start")
