@@ -265,3 +265,154 @@ function! CompileRun() abort
         execute '!' . l:cmd
     endif
 endfunction
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => EDA Radix & Bit-Width Converter (Hex <-> Dec <-> Bin)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! s:Num2Bin(n) abort
+    if a:n == 0 | return '0000' | endif
+    let l:val = a:n
+    let l:res = ''
+    let l:cnt = 0
+    while l:val > 0
+        let l:res = (l:val % 2) . l:res
+        let l:val = l:val / 2
+        let l:cnt += 1
+        if l:cnt % 4 == 0 && l:val > 0
+            let l:res = '_' . l:res
+        endif
+    endwhile
+    let l:rem = l:cnt % 4
+    if l:rem != 0
+        let l:res = repeat('0', 4 - l:rem) . l:res
+    endif
+    return l:res
+endfunction
+
+function! s:GetBitWidth(n) abort
+    if a:n <= 0 | return 1 | endif
+    let l:val = a:n
+    let l:w = 0
+    while l:val > 0
+        let l:w += 1
+        let l:val = l:val / 2
+    endwhile
+    return l:w
+endfunction
+
+function! s:FormatHex32(n) abort
+    let l:h = printf('%08X', a:n)
+    return l:h[0:3] . '_' . l:h[4:7]
+endfunction
+
+function! s:ParseNumber(raw) abort
+    let l:str = substitute(a:raw, '_', '', 'g')
+    let l:val = 0
+    let l:has_size = 0
+    let l:size = 0
+    if l:str =~? '\v^\d+''[hHbBdDoO]'
+        let l:size = str2nr(matchstr(l:str, '\v^\d+'))
+        let l:has_size = 1
+    endif
+
+    if l:str =~? '\v''[hH]'
+        let l:val = str2nr(matchstr(l:str, '\v''[hH]\zs.*'), 16)
+    elseif l:str =~? '\v''[bB]'
+        let l:val = str2nr(matchstr(l:str, '\v''[bB]\zs.*'), 2)
+    elseif l:str =~? '\v''[dD]'
+        let l:val = str2nr(matchstr(l:str, '\v''[dD]\zs.*'), 10)
+    elseif l:str =~? '\v''[oO]'
+        let l:val = str2nr(matchstr(l:str, '\v''[oO]\zs.*'), 8)
+    elseif l:str =~? '\v^0[xX]'
+        let l:val = str2nr(l:str[2:], 16)
+    elseif l:str =~? '\v^0[bB]'
+        let l:val = str2nr(l:str[2:], 2)
+    else
+        let l:val = str2nr(l:str, 10)
+    endif
+    return [l:val, l:has_size, l:size]
+endfunction
+
+function! s:GetNumberUnderCursor() abort
+    let l:line = getline('.')
+    let l:col = col('.')
+    let l:pattern = '\v(\d*''[hHbBdDoO][0-9a-fA-F_]+|0[xX][0-9a-fA-F_]+|0[bB][01_]+|-?\d[0-9_]*)'
+    let l:start = 0
+    while 1
+        let l:m = matchstrpos(l:line, l:pattern, l:start)
+        if empty(l:m[0])
+            break
+        endif
+        let [l:token, l:s, l:e] = [l:m[0], l:m[1] + 1, l:m[2]]
+        if l:col >= l:s && l:col <= l:e
+            return [l:token, l:s, l:e]
+        endif
+        let l:start = l:m[2]
+    endwhile
+    let l:word = expand('<cword>')
+    return [l:word, l:col, l:col + len(l:word)]
+endfunction
+
+function! RadixInspect(raw) abort
+    let l:raw = empty(a:raw) ? s:GetNumberUnderCursor()[0] : a:raw
+    if empty(l:raw)
+        echo 'Radix: no number under cursor'
+        return
+    endif
+    let [l:val, l:has_size, l:size] = s:ParseNumber(l:raw)
+    let l:width = s:GetBitWidth(l:val)
+    let l:bin = s:Num2Bin(l:val)
+    let l:hex32 = s:FormatHex32(l:val)
+    let l:bits_desc = l:has_size ? printf('%d bits (spec: %d)', l:width, l:size) : printf('%d bits [%d:0]', l:width, max([0, l:width - 1]))
+    redraw
+    echohl Title
+    echo '[Radix] '
+    echohl None
+    echon printf('Dec: %d  |  Hex: 0x%X (32''h%s)  |  Bin: ''b%s  |  %s', l:val, l:val, l:hex32, l:bin, l:bits_desc)
+endfunction
+
+function! s:ReplaceCursorToken(new_str) abort
+    let [l:token, l:s, l:e] = s:GetNumberUnderCursor()
+    if empty(l:token) | return | endif
+    let l:line = getline('.')
+    let l:newline = (l:s > 1 ? l:line[0 : l:s-2] : '') . a:new_str . l:line[l:e :]
+    call setline('.', l:newline)
+    echo 'Replaced: ' . l:token . ' -> ' . a:new_str
+endfunction
+
+function! RadixToHex() abort
+    let [l:token, l:s, l:e] = s:GetNumberUnderCursor()
+    if empty(l:token) | return | endif
+    let [l:val, l:has_size, l:size] = s:ParseNumber(l:token)
+    let l:new_str = l:has_size ? printf('%d''h%X', l:size, l:val) : printf('0x%X', l:val)
+    call s:ReplaceCursorToken(l:new_str)
+endfunction
+
+function! RadixToDec() abort
+    let [l:token, l:s, l:e] = s:GetNumberUnderCursor()
+    if empty(l:token) | return | endif
+    let [l:val, l:has_size, l:size] = s:ParseNumber(l:token)
+    let l:new_str = l:has_size ? printf('%d''d%d', l:size, l:val) : printf('%d', l:val)
+    call s:ReplaceCursorToken(l:new_str)
+endfunction
+
+function! RadixToBin() abort
+    let [l:token, l:s, l:e] = s:GetNumberUnderCursor()
+    if empty(l:token) | return | endif
+    let [l:val, l:has_size, l:size] = s:ParseNumber(l:token)
+    let l:bin = s:Num2Bin(l:val)
+    let l:new_str = l:has_size ? printf('%d''b%s', l:size, l:bin) : printf('''b%s', l:bin)
+    call s:ReplaceCursorToken(l:new_str)
+endfunction
+
+command! -nargs=? Radix call RadixInspect(<q-args>)
+command! RadixToHex call RadixToHex()
+command! RadixToDec call RadixToDec()
+command! RadixToBin call RadixToBin()
+
+nnoremap <silent> <leader>cv :call RadixInspect('')<CR>
+vnoremap <silent> <leader>cv "zy:call RadixInspect(@z)<CR>
+nnoremap <silent> <leader>cx :call RadixToHex()<CR>
+nnoremap <silent> <leader>cn :call RadixToDec()<CR>
+nnoremap <silent> <leader>cb :call RadixToBin()<CR>
