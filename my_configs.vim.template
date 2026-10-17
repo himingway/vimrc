@@ -109,6 +109,15 @@ nnoremap <silent> \m :let @/=expand('<cword>')<CR>:set hlsearch<CR>
 " Insert current timestamp via <leader>dt
 nnoremap <leader>dt a<C-R>=strftime('%Y-%m-%d %H:%M:%S')<CR><Esc>
 
+" Display full absolute path of current file
+nnoremap <silent> <leader>fp :echo expand('%:p')<CR>
+
+" Copy full absolute path to clipboard and echo
+nnoremap <silent> <leader>cp :let @+=expand('%:p')<CR>:echo "Copied path: " . expand('%:p')<CR>
+
+" Copy filename only to clipboard and echo
+nnoremap <silent> <leader>fn :let @+=expand('%:t')<CR>:echo "Copied filename: " . expand('%:t')<CR>
+
 " --- NERDTree Settings ---
 let g:NERDTreeShowHidden = 1
 
