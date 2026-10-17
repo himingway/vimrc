@@ -62,10 +62,11 @@ augroup END
 
 " --- ASIC/FPGA File Header Generator (<leader>vh) ---
 function! s:InsertVerilogHeader() abort
+    let l:author = !empty($USER) ? $USER : (!empty($LOGNAME) ? $LOGNAME : 'User')
     let l:header = [
         \ '// =============================================================================',
         \ '// File Name    : ' . expand('%:t'),
-        \ '// Author       : Amor',
+        \ '// Author       : ' . l:author,
         \ '// Created Date : ' . strftime('%Y-%m-%d %H:%M:%S'),
         \ '// Description  : ',
         \ '// =============================================================================',
