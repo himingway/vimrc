@@ -1,0 +1,156 @@
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => User Custom Configuration (my_configs.vim)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" --- UI Display & Basic Behavior ---
+set number
+set relativenumber                  " Relative line numbers: easy relative jumps (e.g. 5j, 10k)
+set cursorcolumn                    " Highlight current column: assists port and assignment alignment
+set belloff=all                     " Mute all bell sounds
+set textwidth=0                     " Disable automatic hard line wrapping (critical for Verilog/SV)
+set tags=./tags;,tags               " Recursively find ctags files upwards
+
+" Basic indentation
+set autoindent
+set smartindent&
+
+" Display invisible characters (tab alignment guide)
+set list
+set listchars=tab:\|\ ,trail:•,extends:❯,precedes:❮,nbsp:␣
+
+" --- GUI Interface & Fonts ---
+set guioptions-=m                   " Hide menu bar
+set guioptions-=T                   " Hide toolbar
+set guioptions-=r                   " Hide right scrollbar
+set guioptions-=L                   " Hide left scrollbar
+
+" Prioritize bundled JetBrainsMonoNL Nerd Font Mono (no ligatures + icons)
+if has("gui_gtk2") || has("gui_gtk3") || has("linux")
+    set guifont=JetBrainsMonoNL\ Nerd\ Font\ Mono\ 13,JetBrainsMonoNL\ NFM\ 13,Hack\ Nerd\ Font\ Mono\ 13,monospace\ 11
+elseif has("mac") || has("macunix")
+    set guifont=JetBrainsMonoNL\ Nerd\ Font\ Mono:h13,JetBrainsMonoNL\ NFM:h13,Hack\ Nerd\ Font\ Mono:h13,Menlo:h14
+elseif has("win16") || has("win32") || has("win64")
+    set guifont=JetBrainsMonoNL\ Nerd\ Font\ Mono:h13,JetBrainsMonoNL\ NFM:h13,Hack\ Nerd\ Font\ Mono:h13,Consolas:h12
+endif
+
+" Color scheme
+colorscheme gruvbox
+
+" Fix terminal key protocol quirks (compatible with Vim 8.0 and 9.x)
+if !has('gui_running')
+    if exists('+keyprotocol')
+        set keyprotocol=
+    endif
+    let &term = &term
+endif
+
+" --- Code Completion Enhancements ---
+set completeopt=menuone,noinsert,noselect   " Popup menu for single matches without auto-inserting
+set shortmess+=c                            " Silence completion scan messages in echo area
+" Trigger omni-completion in insert mode via Ctrl-Space or Ctrl-@
+inoremap <C-Space> <C-X><C-O>
+inoremap <C-@> <C-X><C-O>
+
+" --- Verilog / SystemVerilog Settings ---
+" Note: vhda/verilog_systemverilog v3+ deprecated g:verilog_disable_indent in favor of g:verilog_disable_indent_lst.
+" Disable plugin automatic indent to rely on clean autoindent:
+let g:verilog_disable_indent_lst = "all"
+augroup verilog_custom_indent
+    autocmd!
+    autocmd FileType verilog,verilog_systemverilog,systemverilog setlocal indentexpr=
+augroup END
+
+" --- ASIC/FPGA File Header Generator (<leader>vh) ---
+function! s:InsertVerilogHeader() abort
+    let l:header = [
+        \ '// =============================================================================',
+        \ '// File Name    : ' . expand('%:t'),
+        \ '// Author       : Amor',
+        \ '// Created Date : ' . strftime('%Y-%m-%d %H:%M:%S'),
+        \ '// Description  : ',
+        \ '// =============================================================================',
+        \ '`timescale 1ns / 1ps',
+        \ ''
+        \ ]
+    call append(0, l:header)
+    normal! 6G$
+    startinsert!
+endfunction
+command! VerilogHeader call <SID>InsertVerilogHeader()
+nnoremap <leader>vh :VerilogHeader<CR>
+
+" --- auto-pairs Settings ---
+" Uncomment the following line to completely disable auto-pairs:
+" let g:AutoPairs = {}
+
+" --- Fast Saving & Clipboard Mappings ---
+command! W execute ':w!'
+
+" Fast save with Space key in normal mode (ergonomic and conflict-free)
+nnoremap <Space> :update<CR>
+
+" Ctrl-S save (:update writes only when buffer is modified)
+nnoremap <C-s> :update<CR>
+inoremap <C-s> <C-O>:update<CR>
+vnoremap <C-s> <Esc>:update<CR>gv
+
+" System clipboard interaction
+vnoremap <leader>y "+y
+nnoremap <S-Insert> "+gp
+" Literal clipboard paste in insert mode (prevents staircase indentation)
+inoremap <S-Insert> <C-R><C-O>+
+
+" Quickly highlight word under cursor without jumping
+nnoremap <silent> \m :let @/=expand('<cword>')<CR>:set hlsearch<CR>
+
+" Insert current timestamp via <leader>dt
+nnoremap <leader>dt a<C-R>=strftime('%Y-%m-%d %H:%M:%S')<CR><Esc>
+
+" --- NERDTree Settings ---
+let g:NERDTreeShowHidden = 1
+
+" Auto-open NERDTree only if not in diff mode or git commit; focus main window
+augroup nerd_tree_auto
+    autocmd!
+    autocmd VimEnter * if !&diff && expand('%') !~# 'COMMIT_EDITMSG' | silent! NERDTree | wincmd p | endif
+    " Exit Vim if NERDTree is the only remaining window in the tab
+    autocmd BufEnter * if tabpagenr('$') == 1 && winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | quit | endif
+    " Prevent other buffers from opening inside the NERDTree window
+    autocmd BufEnter * if winnr() == winnr('h') && bufname('#') =~ 'NERD_tree_\d\+' && bufname('%') !~ 'NERD_tree_\d\+' && winnr('$') > 1 |
+        \ let b:saved_buf = bufnr() | buffer# | execute "normal! \<C-W>w" | execute 'buffer' . b:saved_buf | endif
+    " Mirror NERDTree across newly opened tabs
+    autocmd BufWinEnter * if &buftype != 'quickfix' && getcmdwintype() == '' | silent! NERDTreeMirror | endif
+augroup END
+
+" --- Dynamic Font Zoom for gVim (fallback font scaling, bounds: 8-36) ---
+if has("gui_running")
+    function! s:AdjustFontSize(amount) abort
+        let l:new_fonts = []
+        for l:font in split(&guifont, '\s*,\s*')
+            if l:font =~# ':h\d\+'
+                let l:size = matchstr(l:font, ':h\zs\d\+')
+                let l:new_size = max([8, min([36, str2nr(l:size) + a:amount])])
+                call add(l:new_fonts, substitute(l:font, ':h\d\+', ':h' . l:new_size, ''))
+            elseif l:font =~# '\d\+$'
+                let l:size = matchstr(l:font, '\d\+$')
+                let l:new_size = max([8, min([36, str2nr(l:size) + a:amount])])
+                call add(l:new_fonts, substitute(l:font, '\d\+$', l:new_size, ''))
+            else
+                call add(l:new_fonts, l:font)
+            endif
+        endfor
+        let &guifont = join(l:new_fonts, ',')
+        redraw
+        echo "Active Font: " . split(&guifont, ',')[0]
+    endfunction
+
+    " Keyboard shortcuts: <leader>= zoom in, <leader>- zoom out
+    nnoremap <silent> <leader>= :call <SID>AdjustFontSize(1)<CR>
+    nnoremap <silent> <leader>- :call <SID>AdjustFontSize(-1)<CR>
+
+    " Mouse shortcuts: Ctrl + ScrollWheel to zoom
+    nnoremap <silent> <C-ScrollWheelUp> :call <SID>AdjustFontSize(1)<CR>
+    nnoremap <silent> <C-ScrollWheelDown> :call <SID>AdjustFontSize(-1)<CR>
+    inoremap <silent> <C-ScrollWheelUp> <Esc>:call <SID>AdjustFontSize(1)<CR>a
+    inoremap <silent> <C-ScrollWheelDown> <Esc>:call <SID>AdjustFontSize(-1)<CR>a
+endif

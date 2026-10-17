@@ -28,6 +28,12 @@ catch
 endtry
 EOF
 
+# Initialize my_configs.vim from template if not present
+if [ ! -f "${REPO_DIR}/my_configs.vim" ] && [ -f "${REPO_DIR}/my_configs.vim.template" ]; then
+    cp "${REPO_DIR}/my_configs.vim.template" "${REPO_DIR}/my_configs.vim"
+    echo "Initialized ${REPO_DIR}/my_configs.vim from my_configs.vim.template"
+fi
+
 # Generate documentation tags once after installation
 if command -v vim >/dev/null 2>&1; then
     vim -es -u "$HOME/.vimrc" -c "helptags ALL" -c "q" 2>/dev/null || true
