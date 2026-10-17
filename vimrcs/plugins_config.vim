@@ -130,6 +130,17 @@ au FileType mako vmap Si S"i${ _(<esc>2f"a) }<esc>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => auto-pairs (Verilog / SystemVerilog optimization)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Exclude single quote (') and backtick (`) in Verilog/SystemVerilog
+" to prevent auto-closing from breaking 1'b0 and `define macros
+augroup AutoPairsVerilog
+    autocmd!
+    autocmd FileType verilog,verilog_systemverilog,systemverilog let b:AutoPairs = {'(':')', '[':']', '{':'}', '"':'"'}
+augroup END
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => lightline
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:lightline = {
@@ -174,6 +185,9 @@ let g:ale_linters = {
 \   'verilog': ['verilator'],
 \   'verilog_systemverilog': ['verilator'],
 \}
+
+" Verilog / SystemVerilog verilator options for modern SV & linting
+let g:ale_verilog_verilator_options = '-Wall -Wno-fatal -sv -Wno-DECLFILENAME'
 
 nmap <silent> <leader>a <Plug>(ale_next_wrap)
 
@@ -237,6 +251,7 @@ vnoremap <leader>a= :Tabularize /=<CR>
 vnoremap <leader>a< :Tabularize /<=<CR>
 vnoremap <leader>a: :Tabularize /:<CR>
 vnoremap <leader>a, :Tabularize /,<CR>
+vnoremap <leader>a( :Tabularize /(<CR>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -273,7 +288,27 @@ let g:Lf_WildIgnore = {
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Helper commands
+" => Helper commands & Performance
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Generate helptags on demand (no need to run on every startup)
 command! GenerateHelpTags execute 'helptags ALL'
+
+" Fast syntax highlighting: avoid freezing on ultra-long lines (e.g. minified netlists)
+set synmaxcol=500
+
+" Disable cursorcolumn in insert mode to eliminate input latency on remote VNC/SSH
+augroup RemoteCursorPerformance
+    autocmd!
+    autocmd InsertEnter * if &cursorcolumn | let b:restore_cc = 1 | setlocal nocursorcolumn | endif
+    autocmd InsertLeave * if get(b:, 'restore_cc', 0) | setlocal cursorcolumn | unlet b:restore_cc | endif
+augroup END
+
+" Clean trailing whitespace across current file while preserving cursor position
+function! s:CleanTrailingWhitespace() abort
+    let l:save_view = winsaveview()
+    silent! %s/\s\+$//e
+    call winrestview(l:save_view)
+    echo "Trailing whitespace cleaned."
+endfunction
+command! CleanTrailingWS call <SID>CleanTrailingWhitespace()
+nnoremap <silent> <leader>cw :CleanTrailingWS<CR>

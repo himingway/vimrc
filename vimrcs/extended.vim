@@ -232,6 +232,14 @@ function! CompileRun() abort
         let l:cmd = 'npx ts-node ' . l:file
     elseif &filetype ==# 'matlab'
         let l:cmd = 'octave ' . l:file
+    elseif &filetype =~# '^\%(verilog\|systemverilog\|verilog_systemverilog\)$'
+        if executable('iverilog')
+            let l:cmd = 'iverilog -g2012 ' . l:file . ' -o ' . l:out . ' && vvp ' . l:out
+        elseif executable('verilator')
+            let l:cmd = 'verilator --lint-only -Wall -sv ' . l:file
+        endif
+    elseif &filetype ==# 'tcl'
+        let l:cmd = 'tclsh ' . l:file
     endif
 
     if empty(l:cmd)
