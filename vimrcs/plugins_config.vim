@@ -184,6 +184,7 @@ let g:ale_linters = {
 \   'rust': ['cargo'],
 \   'verilog': ['verilator'],
 \   'verilog_systemverilog': ['verilator'],
+\   'perl': ['perl'],
 \}
 
 " Verilog / SystemVerilog verilator options for modern SV & linting
@@ -346,3 +347,40 @@ vnoremap <silent> <leader>ts :FloatermSend<CR>
 
 " Quick escape to Terminal-Normal mode to scroll/copy terminal text
 tnoremap <Esc><Esc> <C-\><C-n>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Tagbar (Code structure outline for Verilog/SV, TCL, Perl)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+nmap <F4> :TagbarToggle<CR>
+let g:tagbar_width = 30
+let g:tagbar_autofocus = 1
+let g:tagbar_sort = 0  " Preserve file declaration order
+
+" Verilog & SystemVerilog ctags definition for Tagbar
+let g:tagbar_type_verilog = {
+    \ 'ctagstype': 'verilog',
+    \ 'kinds': [
+        \ 'm:modules',
+        \ 'i:interfaces',
+        \ 'p:packages',
+        \ 'c:classes',
+        \ 't:tasks',
+        \ 'f:functions',
+        \ 'r:registers',
+        \ 'w:wires',
+        \ 'e:typedefs',
+        \ 'd:defines'
+    \ ]
+\ }
+let g:tagbar_type_systemverilog = g:tagbar_type_verilog
+let g:tagbar_type_verilog_systemverilog = g:tagbar_type_verilog
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => vim-dirdiff (Directory recursion diff for IC regression)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:DirDiffExcludes = ".git,work,csrc,*.daidir,*.o,*.so,novas.*,*.fsdb,*.vcd,*.vpd,build,dist"
+let g:DirDiffIgnore = "Id:.*$"
+let g:DirDiffSort = 1
+let g:DirDiffWindowSize = 14

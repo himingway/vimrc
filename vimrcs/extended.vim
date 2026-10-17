@@ -245,6 +245,8 @@ function! CompileRun() abort
         endif
     elseif &filetype ==# 'tcl'
         let l:cmd = 'tclsh ' . l:file
+    elseif &filetype ==# 'perl'
+        let l:cmd = 'perl ' . l:file
     endif
 
     if empty(l:cmd)

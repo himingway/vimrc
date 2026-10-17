@@ -42,9 +42,10 @@ augroup vimrc_filetypes
     autocmd FileType yaml,toml,json setlocal ts=2 sts=2 sw=2 expandtab
 
     " ----------------------------------------------------
-    " EDA / Hardware Design Constraints
+    " EDA / Hardware Design Constraints & Logs
     " ----------------------------------------------------
-    autocmd BufNewFile,BufRead *.sdc,*.xdc set ft=tcl
+    autocmd BufNewFile,BufRead *.sdc,*.xdc,*.upf set filetype=sdc
+    autocmd BufNewFile,BufRead *.rpt,*.out,*.logv,transcript set filetype=log
 augroup END
 
 let python_highlight_all = 1

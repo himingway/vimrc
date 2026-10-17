@@ -62,6 +62,9 @@ verilog_systemverilog.vim https://github.com/vhda/verilog_systemverilog.vim
 LargeFile https://github.com/vim-scripts/LargeFile
 LeaderF https://github.com/Yggdroot/LeaderF
 vim-floaterm https://github.com/voldikss/vim-floaterm
+tagbar https://github.com/preservim/tagbar
+vim-dirdiff https://github.com/will133/vim-dirdiff
+vim-log-highlighting https://github.com/MTDL9/vim-log-highlighting
 """.strip()
 
 SOURCE_DIR = path.join(path.dirname(__file__), "pack", "vendor", "start")
