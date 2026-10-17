@@ -8,6 +8,8 @@ There are two versions:
 
 * **The Basic**: If you want something small just copy [basic.vim](https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim) into your ~/.vimrc and you will have a good basic setup
 * **The Awesome**: Includes a ton of useful plugins, color schemes, and configurations
+* **[Vim 8.0 Compatibility Log](VIM8_COMPATIBILITY.md)**: Details on all fixes and optimizations ensuring full compatibility with Vim / gVim 8.0 (RHEL 8 / CentOS 8 EDA environments)
+* **[Cheatsheet & Shortcuts](CHEATSHEET.md)**: Complete guide for IC design, EDA scripting, multi-cursor, and navigation workflows
 
 I would, of course, recommend using the awesome version.
 

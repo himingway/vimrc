@@ -1,6 +1,7 @@
 # 🚀 Vim / gVim 芯片设计与脚本开发全快捷键 & 实用技巧速查表
 
-> **提示**：本配置库的 `<leader>` 键为逗号 `,`。本文档中的 `,` 均代表按下 `<leader>`。
+> **提示**：本配置库的 `<leader>` 键为逗号 `,`。本文档中的 `,` 均代表按下 `<leader>`。  
+> **Vim 8.0 兼容性**：所有插件与配置均已深度兼容并加固于 RHEL 8 / CentOS 8（Vim 8.0.1763 离线环境），技术实现详见 [VIM8_COMPATIBILITY.md](file:///home/badppg/vimrc/VIM8_COMPATIBILITY.md)。
 
 ---
 
