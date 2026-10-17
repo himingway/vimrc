@@ -428,3 +428,29 @@ augroup BufTabLineColors
     autocmd!
     autocmd ColorScheme,VimEnter * call s:SetupBufTabLineColors()
 augroup END
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => NERDCommenter (Full-featured professional commenting)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Add spaces after comment delimiters by default (// code instead of //code)
+let g:NERDSpaceDelims = 1
+
+" Use compact syntax for prettified multi-line comments
+let g:NERDCompactSexyComs = 1
+
+" Align line-wise comment delimiters flush left instead of following code indentation
+let g:NERDDefaultAlign = 'left'
+
+" Allow commenting and inverting empty lines (useful when commenting a visual block)
+let g:NERDCommentEmptyLines = 1
+
+" Enable trimming of trailing whitespace when uncommenting
+let g:NERDTrimTrailingWhitespace = 1
+
+" Enable NERDCommenterToggle to check all selected lines
+let g:NERDToggleCheckAllLines = 1
+
+" Map 'gc' in normal and visual mode to NERDCommenterToggle for quick toggle
+nmap gc <Plug>NERDCommenterToggle
+vmap gc <Plug>NERDCommenterToggle

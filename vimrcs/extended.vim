@@ -133,7 +133,7 @@ vnoremap <silent> <leader>r :call VisualSelection('replace', '')<CR>
 " Do :help cope if you are unsure what cope is. It's super useful!
 "
 " When you search with Ack, display your results in cope by doing:
-"   <leader>cc
+"   <leader>cq or <leader>co
 "
 " To go to the next search result do:
 "   <leader>n
@@ -141,7 +141,7 @@ vnoremap <silent> <leader>r :call VisualSelection('replace', '')<CR>
 " To go to the previous search results do:
 "   <leader>p
 "
-map <leader>cc :botright cope<cr>
+map <leader>cq :botright cope<cr>
 map <leader>co ggVGy:tabnew<cr>:set syntax=qf<cr>pgg
 map <leader>n :cn<cr>
 map <leader>p :cp<cr>
@@ -411,8 +411,16 @@ command! RadixToHex call RadixToHex()
 command! RadixToDec call RadixToDec()
 command! RadixToBin call RadixToBin()
 
+" Radix converter mappings:
+" Use <leader>r (Radix) as primary prefix:
+nnoremap <silent> <leader>rv :call RadixInspect('')<CR>
+vnoremap <silent> <leader>rv "zy:call RadixInspect(@z)<CR>
+nnoremap <silent> <leader>rx :call RadixToHex()<CR>
+nnoremap <silent> <leader>rd :call RadixToDec()<CR>
+nnoremap <silent> <leader>rn :call RadixToDec()<CR>
+nnoremap <silent> <leader>rb :call RadixToBin()<CR>
+
+" Backward compatibility aliases:
 nnoremap <silent> <leader>cv :call RadixInspect('')<CR>
 vnoremap <silent> <leader>cv "zy:call RadixInspect(@z)<CR>
 nnoremap <silent> <leader>cx :call RadixToHex()<CR>
-nnoremap <silent> <leader>cn :call RadixToDec()<CR>
-nnoremap <silent> <leader>cb :call RadixToBin()<CR>
