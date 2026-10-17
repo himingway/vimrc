@@ -65,19 +65,19 @@ SOURCE_DIR = path.join(path.dirname(__file__), "pack", "vendor", "start")
 
 
 def download_zip(github_url):
-    """Download repository zip archive, trying main then master branch."""
+    """Download repository zip archive, trying HEAD then main then master branch."""
     headers = {"User-Agent": "Mozilla/5.0 (Vimrc-Plugin-Updater)"}
-    for branch in ["main", "master"]:
-        url = f"{github_url}/archive/refs/heads/{branch}.zip"
+    for target in ["HEAD", "main", "master"]:
+        url = f"{github_url}/archive/{target}.zip"
         try:
             req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=30) as resp:
+            with urllib.request.urlopen(req, timeout=45) as resp:
                 return resp.read()
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 continue
             raise
-    raise RuntimeError(f"Neither 'main' nor 'master' branch found for {github_url}")
+    raise RuntimeError(f"Unable to download archive for {github_url}")
 
 
 def download_extract_replace(plugin_name, github_url, temp_dir, source_dir):

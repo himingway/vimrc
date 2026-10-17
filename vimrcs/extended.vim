@@ -11,12 +11,10 @@
 " Set font according to system
 if has("mac") || has("macunix")
     set gfn=IBM\ Plex\ Mono:h14,Hack:h14,Source\ Code\ Pro:h15,Menlo:h15
-elseif has("win16") || has("win32")
+elseif has("win16") || has("win32") || has("win64")
     set gfn=IBM\ Plex\ Mono:h14,Source\ Code\ Pro:h12,Bitstream\ Vera\ Sans\ Mono:h11
-elseif has("gui_gtk2")
-    set gfn=IBM\ Plex\ Mono\ 14,:Hack\ 14,Source\ Code\ Pro\ 12,Bitstream\ Vera\ Sans\ Mono\ 11
-elseif has("linux")
-    set gfn=IBM\ Plex\ Mono\ 14,:Hack\ 14,Source\ Code\ Pro\ 12,Bitstream\ Vera\ Sans\ Mono\ 11
+elseif has("gui_gtk2") || has("gui_gtk3") || has("linux")
+    set gfn=IBM\ Plex\ Mono\ 14,Hack\ 14,Source\ Code\ Pro\ 12,Bitstream\ Vera\ Sans\ Mono\ 11
 elseif has("unix")
     set gfn=Monospace\ 11
 endif
@@ -243,7 +241,11 @@ function! CompileRun() abort
 
     if has('terminal')
         " Vim 8 & 9 native asynchronous terminal
-        execute 'botright 12split | terminal ' . l:cmd
+        if has('patch-8.0.0976')
+            execute 'botright terminal ++rows=12 ' . l:cmd
+        else
+            execute 'botright terminal ' . l:cmd
+        endif
     else
         execute '!' . l:cmd
     endif
