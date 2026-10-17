@@ -335,20 +335,48 @@ endif
 let g:floaterm_autoinsert = 1
 let g:floaterm_autoclose = 1
 
-" Function key bindings
-let g:floaterm_keymap_toggle = '<F12>'
-let g:floaterm_keymap_new    = '<F9>'
-let g:floaterm_keymap_prev   = '<F8>'
-let g:floaterm_keymap_next   = '<F10>'
-
-" Leader-based shortcuts
+" Explicit key bindings (guaranteed to work regardless of plugin load timing)
+" Toggle terminal (<F12> or ,tt)
+nnoremap <silent> <F12>      :FloatermToggle<CR>
+tnoremap <silent> <F12>      <C-\><C-n>:FloatermToggle<CR>
+inoremap <silent> <F12>      <Esc>:FloatermToggle<CR>
 nnoremap <silent> <leader>tt :FloatermToggle<CR>
 tnoremap <silent> <leader>tt <C-\><C-n>:FloatermToggle<CR>
+
+" Create new terminal (<F9> or ,tn)
+nnoremap <silent> <F9>       :FloatermNew<CR>
+tnoremap <silent> <F9>       <C-\><C-n>:FloatermNew<CR>
 nnoremap <silent> <leader>tn :FloatermNew<CR>
+
+" Previous / Next terminal (<F8>/<F10> or ,tp/,tj)
+nnoremap <silent> <F8>       :FloatermPrev<CR>
+tnoremap <silent> <F8>       <C-\><C-n>:FloatermPrev<CR>
+nnoremap <silent> <leader>tp :FloatermPrev<CR>
+nnoremap <silent> <F10>      :FloatermNext<CR>
+tnoremap <silent> <F10>      <C-\><C-n>:FloatermNext<CR>
+nnoremap <silent> <leader>tj :FloatermNext<CR>
+
+" Hide terminal (,th)
+nnoremap <silent> <leader>th :FloatermHide<CR>
+tnoremap <silent> <leader>th <C-\><C-n>:FloatermHide<CR>
+
+" Kill terminal (<F11> or ,tk)
+nnoremap <silent> <F11>      :FloatermKill<CR>
+tnoremap <silent> <F11>      <C-\><C-n>:FloatermKill<CR>
+nnoremap <silent> <leader>tk :FloatermKill<CR>
+tnoremap <silent> <leader>tk <C-\><C-n>:FloatermKill<CR>
+
+" Send visual selection to terminal (,ts)
 vnoremap <silent> <leader>ts :FloatermSend<CR>
 
 " Quick escape to Terminal-Normal mode to scroll/copy terminal text
 tnoremap <Esc><Esc> <C-\><C-n>
+
+" Conveniently close/hide Floaterm with 'q' when in Terminal-Normal mode
+augroup floaterm_keymaps
+    autocmd!
+    autocmd FileType floaterm nnoremap <buffer><silent> q :FloatermHide<CR>
+augroup END
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
