@@ -7,6 +7,9 @@ if v:version < 700
 endif
 let loaded_nerd_comments = 1
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 " Function: s:InitVariable() function
 " This function is used to initialise a given variable to a given value. The
 " variable is only initialised if it does not exist prior
@@ -129,3 +132,5 @@ inoremap <silent> <Plug>NERDCommenterInsert <C-\><C-O>:call nerdcommenter#Commen
 
 " switch to/from alternative delimiters (does not use wrapper function)
 nnoremap <Plug>NERDCommenterAltDelims :call nerdcommenter#SwitchToAlternativeDelimiters(1)<CR>
+
+let &cpo = s:cpo_save

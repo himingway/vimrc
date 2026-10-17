@@ -1,6 +1,9 @@
 " Author: w0rp <devw0rp@gmail.com>
 " Description: ALE functions for autocmd events.
 
+let s:save_cpo = &cpo
+set cpo&vim
+
 " Get the number of milliseconds since some vague, but consistent, point in
 " the past.
 "
@@ -50,8 +53,7 @@ endfunction
 
 function! ale#events#ReadOrEnterEvent(buffer) abort
     " Apply pattern options if the variable is set.
-    if get(g:, 'ale_pattern_options_enabled', 1)
-    \&& !empty(get(g:, 'ale_pattern_options'))
+    if get(g:, 'ale_pattern_options_enabled', 1) && !empty(get(g:, 'ale_pattern_options'))
         call ale#pattern_options#SetOptions(a:buffer)
     endif
 
@@ -251,3 +253,5 @@ function! ale#events#Init() abort
         autocmd BufNewFile,BufReadPre jdt://** call ale#uri#jdt#ReadJDTLink(expand('<amatch>'))
     augroup END
 endfunction
+
+let &cpo = s:save_cpo

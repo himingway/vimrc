@@ -1,3 +1,6 @@
+let s:cpo_save = &cpo
+set cpo&vim
+
 " Section: space string init
 " When putting spaces after the left delimiter and before the right we use
 " s:spaceStr for the space char. This way we can make it add anything after
@@ -3032,3 +3035,5 @@ endfunction
 function! s:UnEsc(str, escChar) abort
     return substitute(a:str, a:escChar, '', 'g')
 endfunction
+
+let &cpo = s:cpo_save

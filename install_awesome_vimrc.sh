@@ -15,6 +15,7 @@ cat << EOF > "$HOME/.vimrc"
 " Add your own customizations in ${REPO_DIR}/my_configs.vim
 
 set nocompatible
+set cpoptions&vim
 set packpath^=${REPO_DIR}
 set runtimepath^=${REPO_DIR}
 

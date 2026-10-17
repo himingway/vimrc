@@ -119,10 +119,18 @@ function! s:Normalize(filename)
     endif
 endfunction
 
+function! s:RecordMru(abuf) abort
+    let l:name = bufname(str2nr(a:abuf))
+    if !empty(l:name)
+        call lfMru#record(s:Normalize(fnamemodify(l:name, ':p')))
+    endif
+    call lfMru#recordBuffer(a:abuf)
+endfunction
+
 if get(g:, 'Lf_MruEnable', 1) == 1
     augroup LeaderF_Mru
-        autocmd BufEnter,BufWritePost * call lfMru#record(s:Normalize(expand('<afile>:p'))) |
-                    \ call lfMru#recordBuffer(expand('<abuf>'))
+        autocmd!
+        autocmd BufEnter,BufWritePost * call s:RecordMru(expand('<abuf>'))
     augroup END
 endif
 

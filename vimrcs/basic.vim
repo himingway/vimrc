@@ -32,6 +32,7 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Explicitly ensure modern nocompatible mode
 set nocompatible
+set cpoptions&vim
 
 " Sets how many lines of history VIM has to remember
 set history=500
