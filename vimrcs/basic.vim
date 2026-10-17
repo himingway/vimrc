@@ -38,8 +38,10 @@ filetype plugin on
 filetype indent on
 
 " Set to auto read when a file is changed from the outside
-set autoread
-au FocusGained,BufEnter * silent! checktime
+augroup vimrc_autoread
+    autocmd!
+    autocmd FocusGained,BufEnter * silent! checktime
+augroup END
 
 " With a map leader it's possible to do extra key combinations
 " like <leader>w saves the current file
@@ -60,17 +62,19 @@ command! W execute 'w !sudo tee % > /dev/null' <bar> edit!
 set so=7
 
 " Avoid garbled characters in Chinese language windows OS
-let $LANG='en'
-set langmenu=en
-source $VIMRUNTIME/delmenu.vim
-source $VIMRUNTIME/menu.vim
+if has("win16") || has("win32") || has("win64")
+    let $LANG='en'
+    set langmenu=en
+    silent! source $VIMRUNTIME/delmenu.vim
+    silent! source $VIMRUNTIME/menu.vim
+endif
 
 " Turn on the Wild menu
 set wildmenu
 
-" Ignore compiled files
-set wildignore=*.o,*~,*.pyc
-if has("win16") || has("win32")
+" Ignore compiled and temporary files
+set wildignore=*.o,*~,*.pyc,*/node_modules/*,*/__pycache__/*,*.swp,*.zip,*.tar.gz
+if has("win16") || has("win32") || has("win64")
     set wildignore+=.git\*,.hg\*,.svn\*
 else
     set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
@@ -137,8 +141,10 @@ syntax enable
 " Set regular expression engine automatically
 set regexpengine=0
 
-" Enable 256 colors palette in Gnome Terminal
-if $COLORTERM == 'gnome-terminal'
+" Enable 256 colors palette and true colors when supported
+if has('termguicolors')
+    silent! set termguicolors
+elseif $COLORTERM == 'gnome-terminal' || $TERM =~# '256color'
     set t_Co=256
 endif
 
@@ -207,10 +213,6 @@ vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Moving around, tabs, windows and buffers
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Map <Space> to / (search) and Ctrl-<Space> to ? (backwards search)
-map <space> /
-map <C-space> ?
-
 " Disable highlight when <leader><cr> is pressed
 map <silent> <leader><cr> :noh<cr>
 
@@ -239,8 +241,10 @@ map <leader>t<leader> :tabnext<cr>
 " Let 'tl' toggle between this and the last accessed tab
 let g:lasttab = 1
 nmap <leader>tl :exe "tabn ".g:lasttab<CR>
-au TabLeave * let g:lasttab = tabpagenr()
-
+augroup vimrc_tabs
+    autocmd!
+    autocmd TabLeave * let g:lasttab = tabpagenr()
+augroup END
 
 " Opens a new tab with the current buffer's path
 " Super useful when editing files in the same directory
@@ -257,7 +261,10 @@ catch
 endtry
 
 " Return to last edit position when opening files (You want this!)
-au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+augroup vimrc_lastposition
+    autocmd!
+    autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+augroup END
 
 
 """"""""""""""""""""""""""""""
@@ -273,9 +280,6 @@ set statusline=\ %{HasPaste()}%F%m%r%h\ %w\ \ CWD:\ %r%{getcwd()}%h\ \ \ Line:\ 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Editing mappings
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Remap VIM 0 to first non-blank character
-map 0 ^
-
 " Move a line of text using ALT+[jk] or Command+[jk] on mac
 nmap <M-j> mz:m+<cr>`z
 nmap <M-k> mz:m-2<cr>`z
@@ -289,18 +293,22 @@ if has("mac") || has("macunix")
   vmap <D-k> <M-k>
 endif
 
-" Delete trailing white space on save, useful for some filetypes ;)
-fun! CleanExtraSpaces()
-    let save_cursor = getpos(".")
-    let old_query = getreg('/')
+" Delete trailing white space
+command! CleanExtraSpaces call s:CleanExtraSpaces()
+function! s:CleanExtraSpaces() abort
+    let l:save_cursor = getpos(".")
+    let l:old_query = getreg('/')
     silent! %s/\s\+$//e
-    call setpos('.', save_cursor)
-    call setreg('/', old_query)
-endfun
+    call setpos('.', l:save_cursor)
+    call setreg('/', l:old_query)
+endfunction
 
-if has("autocmd")
-    autocmd BufWritePre *.txt,*.js,*.py,*.wiki,*.sh,*.coffee :call CleanExtraSpaces()
-endif
+" Optional auto-strip on save, disabled by default to prevent dirty git diffs
+" Enable in my_configs.vim with: let g:clean_extra_spaces_on_save = 1
+augroup vimrc_clean_spaces
+    autocmd!
+    autocmd BufWritePre *.txt,*.js,*.py,*.wiki,*.sh,*.coffee if get(g:, 'clean_extra_spaces_on_save', 0) | call s:CleanExtraSpaces() | endif
+augroup END
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

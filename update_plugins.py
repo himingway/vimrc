@@ -1,6 +1,7 @@
-import re
+import os
 import shutil
 import tempfile
+import urllib.error
 import urllib.request
 import zipfile
 from io import BytesIO
@@ -56,48 +57,65 @@ mru.vim https://github.com/vim-scripts/mru.vim
 editorconfig-vim https://github.com/editorconfig/editorconfig-vim
 dracula https://github.com/dracula/vim
 copilot.vim https://github.com/github/copilot.vim
+tabular https://github.com/godlygeek/tabular
+vim-lastplace https://github.com/farmergreg/vim-lastplace
 """.strip()
 
-GITHUB_ZIP = "%s/archive/master.zip"
-
-SOURCE_DIR = path.join(path.dirname(__file__), "sources_non_forked")
+SOURCE_DIR = path.join(path.dirname(__file__), "pack", "vendor", "start")
 
 
-def download_extract_replace(plugin_name, zip_path, temp_dir, source_dir):
-    # Download and extract file in temp dir
-    with urllib.request.urlopen(zip_path) as req:
-        zip_f = zipfile.ZipFile(BytesIO(req.read()))
-        zip_f.extractall(temp_dir)
-        content_disp = req.headers.get("Content-Disposition")
+def download_zip(github_url):
+    """Download repository zip archive, trying main then master branch."""
+    headers = {"User-Agent": "Mozilla/5.0 (Vimrc-Plugin-Updater)"}
+    for branch in ["main", "master"]:
+        url = f"{github_url}/archive/refs/heads/{branch}.zip"
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return resp.read()
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                continue
+            raise
+    raise RuntimeError(f"Neither 'main' nor 'master' branch found for {github_url}")
 
-    filename = re.findall("filename=(.+).zip", content_disp)[0]
-    plugin_temp_path = path.join(temp_dir, path.join(temp_dir, filename))
 
-    # Remove the current plugin and replace it with the extracted
+def download_extract_replace(plugin_name, github_url, temp_dir, source_dir):
+    data = download_zip(github_url)
+    zip_f = zipfile.ZipFile(BytesIO(data))
+    zip_f.extractall(temp_dir)
+
+    # The top-level folder inside the GitHub zip
+    top_entries = [name for name in os.listdir(temp_dir) if path.isdir(path.join(temp_dir, name))]
+    if not top_entries:
+        raise RuntimeError("No folder found in extracted zip")
+    plugin_temp_path = path.join(temp_dir, top_entries[0])
+
     plugin_dest_path = path.join(source_dir, plugin_name)
-
     try:
         shutil.rmtree(plugin_dest_path)
     except OSError:
         pass
 
     shutil.move(plugin_temp_path, plugin_dest_path)
-    print("Updated {0}".format(plugin_name))
+    print(f"Updated {plugin_name}")
 
 
 def update(plugin):
-    name, github_url = plugin.split(" ")
-    zip_path = GITHUB_ZIP % github_url
+    parts = plugin.strip().split()
+    if len(parts) != 2:
+        return
+    name, github_url = parts
+    temp_directory = tempfile.mkdtemp()
     try:
-        download_extract_replace(name, zip_path, temp_directory, SOURCE_DIR)
+        download_extract_replace(name, github_url, temp_directory, SOURCE_DIR)
     except Exception as exp:
-        print("Could not update {}. Error was: {}".format(name, str(exp)))
+        print(f"Could not update {name}. Error was: {exp}")
+    finally:
+        shutil.rmtree(temp_directory, ignore_errors=True)
 
 
 if __name__ == "__main__":
-    temp_directory = tempfile.mkdtemp()
-
-    try:
-        [update(x) for x in PLUGINS.splitlines()]
-    finally:
-        shutil.rmtree(temp_directory)
+    os.makedirs(SOURCE_DIR, exist_ok=True)
+    for line in PLUGINS.splitlines():
+        update(line)

@@ -6,19 +6,27 @@
 
 
 """"""""""""""""""""""""""""""
-" => Enable native vim packages as described in the README
+" => Load packages via native Vim package mechanism (Vim 8 & 9)
 """"""""""""""""""""""""""""""
-set packpath+=~/.vim_runtime
+let s:vim_runtime = expand('<sfile>:p:h:h')
 
+if &packpath !~# escape(s:vim_runtime, '\')
+    execute 'set packpath^=' . fnameescape(s:vim_runtime)
+endif
 
-""""""""""""""""""""""""""""""
-" => Load pathogen paths
-""""""""""""""""""""""""""""""
-let s:vim_runtime = expand('<sfile>:p:h')."/.."
-call pathogen#infect(s:vim_runtime.'/sources_forked/{}')
-call pathogen#infect(s:vim_runtime.'/sources_non_forked/{}')
-call pathogen#infect(s:vim_runtime.'/my_plugins/{}')
-call pathogen#helptags()
+" Load native packages if not yet loaded
+if exists(':packloadall')
+    silent! packloadall
+endif
+
+" Backward compatibility: load plugins in my_plugins/ if any exist
+if isdirectory(s:vim_runtime . '/my_plugins')
+    for s:plugin_dir in glob(s:vim_runtime . '/my_plugins/*', 1, 1)
+        if isdirectory(s:plugin_dir)
+            execute 'set runtimepath+=' . fnameescape(s:plugin_dir)
+        endif
+    endfor
+endif
 
 
 """"""""""""""""""""""""""""""
@@ -159,8 +167,10 @@ nnoremap <silent> <leader>z :Goyo<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:ale_linters = {
 \   'javascript': ['eslint'],
-\   'python': ['flake8'],
-\   'go': ['go', 'golint', 'errcheck']
+\   'typescript': ['eslint'],
+\   'python': ['ruff', 'flake8'],
+\   'go': ['golangci-lint', 'go'],
+\   'rust': ['cargo'],
 \}
 
 nmap <silent> <leader>a <Plug>(ale_next_wrap)
@@ -193,3 +203,18 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*']
 " Copy the link to the line of a Git repository to the clipboard
 nnoremap <leader>v :.GBrowse!<CR>
 xnoremap <leader>v :GBrowse!<CR>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Copilot
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Enable copilot by default if installed, without hijacking Tab
+let g:copilot_no_tab_map = v:true
+imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Helper commands
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Generate helptags on demand (no need to run on every startup)
+command! GenerateHelpTags execute 'helptags ALL'

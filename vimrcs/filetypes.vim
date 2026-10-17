@@ -1,86 +1,64 @@
 """"""""""""""""""""""""""""""
-" => Python section
+" => Filetype configurations
 """"""""""""""""""""""""""""""
+
+augroup vimrc_filetypes
+    autocmd!
+
+    " ----------------------------------------------------
+    " Python
+    " ----------------------------------------------------
+    autocmd FileType python syn keyword pythonDecorator True None False self
+    autocmd FileType python nnoremap <buffer> <leader>1 /class <cr>
+    autocmd FileType python nnoremap <buffer> <leader>2 /def <cr>
+    autocmd FileType python nnoremap <buffer> <leader>C ?class <cr>
+    autocmd FileType python nnoremap <buffer> <leader>D ?def <cr>
+
+    " ----------------------------------------------------
+    " JavaScript / TypeScript
+    " ----------------------------------------------------
+    autocmd FileType javascript,typescript call s:JavaScriptSetup()
+
+    " ----------------------------------------------------
+    " CoffeeScript
+    " ----------------------------------------------------
+    autocmd FileType coffee call s:CoffeeScriptFold()
+
+    " ----------------------------------------------------
+    " Git Commit
+    " ----------------------------------------------------
+    autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0])
+
+    " ----------------------------------------------------
+    " Web templates & Markup
+    " ----------------------------------------------------
+    autocmd BufNewFile,BufRead *.jinja set syntax=htmljinja
+    autocmd BufNewFile,BufRead *.mako set ft=mako
+    autocmd BufNewFile,BufRead *.twig set syntax=html filetype=html
+
+    " ----------------------------------------------------
+    " YAML / TOML / JSON
+    " ----------------------------------------------------
+    autocmd FileType yaml,toml,json setlocal ts=2 sts=2 sw=2 expandtab
+augroup END
+
 let python_highlight_all = 1
-au FileType python syn keyword pythonDecorator True None False self
-
-au BufNewFile,BufRead *.jinja set syntax=htmljinja
-au BufNewFile,BufRead *.mako set ft=mako
-
-au FileType python map <buffer> F :set foldmethod=indent<cr>
-
-au FileType python inoremap <buffer> $r return 
-au FileType python inoremap <buffer> $i import 
-au FileType python inoremap <buffer> $p print 
-au FileType python inoremap <buffer> $f # --- <esc>a
-au FileType python map <buffer> <leader>1 /class 
-au FileType python map <buffer> <leader>2 /def 
-au FileType python map <buffer> <leader>C ?class 
-au FileType python map <buffer> <leader>D ?def 
-
-
-""""""""""""""""""""""""""""""
-" => JavaScript section
-"""""""""""""""""""""""""""""""
-au FileType javascript call JavaScriptFold()
-au FileType javascript setl fen
-au FileType javascript setl nocindent
-
-au FileType javascript,typescript imap <C-t> console.log();<esc>hi
-au FileType javascript,typescript imap <C-a> alert();<esc>hi
-
-au FileType javascript,typescript inoremap <buffer> $r return 
-au FileType javascript,typescript inoremap <buffer> $f // --- PH<esc>FP2xi
-
-function! JavaScriptFold() 
-    setl foldmethod=syntax
-    setl foldlevelstart=1
-    syn region foldBraces start=/{/ end=/}/ transparent fold keepend extend
-
-    function! FoldText()
-        return substitute(getline(v:foldstart), '{.*', '{...}', '')
-    endfunction
-    setl foldtext=FoldText()
-endfunction
-
-
-""""""""""""""""""""""""""""""
-" => CoffeeScript section
-"""""""""""""""""""""""""""""""
-function! CoffeeScriptFold()
-    setl foldmethod=indent
-    setl foldlevelstart=1
-endfunction
-au FileType coffee call CoffeeScriptFold()
-
-au FileType gitcommit call setpos('.', [0, 1, 1, 0])
-
-
-""""""""""""""""""""""""""""""
-" => Shell section
-""""""""""""""""""""""""""""""
-if exists('$TMUX') 
-    if has('nvim')
-        set termguicolors
-    else
-        set term=screen-256color 
-    endif
-endif
-
-
-""""""""""""""""""""""""""""""
-" => Twig section
-""""""""""""""""""""""""""""""
-autocmd BufRead *.twig set syntax=html filetype=html
-
-
-""""""""""""""""""""""""""""""
-" => Markdown
-""""""""""""""""""""""""""""""
 let vim_markdown_folding_disabled = 1
 
+function! s:JavaScriptFoldText() abort
+    return substitute(getline(v:foldstart), '{.*', '{...}', '')
+endfunction
 
-""""""""""""""""""""""""""""""
-" => YAML
-""""""""""""""""""""""""""""""
-autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
+function! s:JavaScriptSetup() abort
+    setlocal foldmethod=syntax
+    setlocal foldlevelstart=1
+    setlocal foldenable
+    setlocal nocindent
+    syn region foldBraces start=/{/ end=/}/ transparent fold keepend extend
+    setlocal foldtext=s:JavaScriptFoldText()
+endfunction
+
+function! s:CoffeeScriptFold() abort
+    setlocal foldmethod=indent
+    setlocal foldlevelstart=1
+endfunction

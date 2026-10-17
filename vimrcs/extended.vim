@@ -32,11 +32,12 @@ set background=dark
 colorscheme peaksea
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Fast editing and reloading of vimrc configs
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-map <leader>e :e! ~/.vim_runtime/my_configs.vim<cr>
-autocmd! bufwritepost ~/.vim_runtime/my_configs.vim source ~/.vim_runtime/my_configs.vim
+let s:vim_runtime = expand('<sfile>:p:h:h')
+execute 'nnoremap <leader>e :e! ' . fnameescape(s:vim_runtime . '/my_configs.vim') . '<cr>'
+augroup vimrc_myconfigs
+    autocmd!
+    execute 'autocmd BufWritePost ' . fnameescape(s:vim_runtime . '/my_configs.vim') . ' nested source ' . fnameescape(s:vim_runtime . '/my_configs.vim')
+augroup END
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -44,7 +45,11 @@ autocmd! bufwritepost ~/.vim_runtime/my_configs.vim source ~/.vim_runtime/my_con
 "    means that you can undo even when you close a buffer/VIM
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 try
-    set undodir=~/.vim_runtime/temp_dirs/undodir
+    let s:undodir = s:vim_runtime . '/temp_dirs/undodir'
+    if !isdirectory(s:undodir)
+        call mkdir(s:undodir, 'p')
+    endif
+    let &undodir = s:undodir
     set undofile
 catch
 endtry
@@ -71,14 +76,7 @@ cnoremap <C-K>		<C-U>
 cnoremap <C-P> <Up>
 cnoremap <C-N> <Down>
 
-" Map ½ to something useful
-map ½ $
-cmap ½ $
-imap ½ $
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Parenthesis/bracket
+" Parenthesis/bracket
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 vnoremap $1 <esc>`>a)<esc>`<i(<esc>
 vnoremap $2 <esc>`>a]<esc>`<i[<esc>
@@ -105,7 +103,10 @@ iab xdate <C-r>=strftime("%d/%m/%y %H:%M:%S")<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Omni complete functions
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-autocmd FileType css set omnifunc=csscomplete#CompleteCSS
+augroup vimrc_omnifunc
+    autocmd!
+    autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+augroup END
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -143,7 +144,10 @@ map <leader>n :cn<cr>
 map <leader>p :cp<cr>
 
 " Make sure that enter is never overriden in the quickfix window
-autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
+augroup vimrc_quickfix
+    autocmd!
+    autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
+augroup END
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -200,31 +204,47 @@ endfunc
 "
 "=================================================================================
 
-map <F5> :call CompileRun()<CR>
-imap <F5> <Esc>:call CompileRun()<CR>
-vmap <F5> <Esc>:call CompileRun()<CR>
+nnoremap <F5> :call CompileRun()<CR>
+inoremap <F5> <Esc>:call CompileRun()<CR>
+vnoremap <F5> <Esc>:call CompileRun()<CR>
 
-func! CompileRun()
-exec "w"
-if &filetype == 'c'
-    exec "!gcc % -o %<"
-    exec "!time ./%<"
-elseif &filetype == 'cpp'
-    exec "!g++ % -o %<"
-    exec "!time ./%<"
-elseif &filetype == 'java'
-    exec "!javac %"
-    exec "!time java %"
-elseif &filetype == 'sh'
-    exec "!time bash %"
-elseif &filetype == 'python'
-    exec "!time python3 %"
-elseif &filetype == 'html'
-    exec "!google-chrome % &"
-elseif &filetype == 'go'
-    exec "!go build %<"
-    exec "!time go run %"
-elseif &filetype == 'matlab'
-    exec "!time octave %"
-endif
-endfunc
+function! CompileRun() abort
+    silent! write
+    let l:cmd = ''
+    let l:file = shellescape(expand('%'))
+    let l:out = shellescape(expand('%<'))
+
+    if &filetype ==# 'c'
+        let l:cmd = 'gcc -Wall ' . l:file . ' -o ' . l:out . ' && ./' . l:out
+    elseif &filetype ==# 'cpp'
+        let l:cmd = 'g++ -Wall ' . l:file . ' -o ' . l:out . ' && ./' . l:out
+    elseif &filetype ==# 'java'
+        let l:cmd = 'javac ' . l:file . ' && java ' . l:out
+    elseif &filetype ==# 'sh'
+        let l:cmd = 'bash ' . l:file
+    elseif &filetype ==# 'python'
+        let l:cmd = 'python3 ' . l:file
+    elseif &filetype ==# 'go'
+        let l:cmd = 'go run ' . l:file
+    elseif &filetype ==# 'rust'
+        let l:cmd = 'cargo run 2>/dev/null || (rustc ' . l:file . ' -o ' . l:out . ' && ./' . l:out . ')'
+    elseif &filetype ==# 'javascript'
+        let l:cmd = 'node ' . l:file
+    elseif &filetype ==# 'typescript'
+        let l:cmd = 'npx ts-node ' . l:file
+    elseif &filetype ==# 'matlab'
+        let l:cmd = 'octave ' . l:file
+    endif
+
+    if empty(l:cmd)
+        echo 'CompileRun: unsupported filetype "' . &filetype . '"'
+        return
+    endif
+
+    if has('terminal')
+        " Vim 8 & 9 native asynchronous terminal
+        execute 'botright 12split | terminal ' . l:cmd
+    else
+        execute '!' . l:cmd
+    endif
+endfunction
