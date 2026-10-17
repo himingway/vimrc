@@ -8,15 +8,15 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => GUI related
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Set font according to system
+" Set font according to system (prioritizing JetBrains Mono NL and Hack)
 if has("mac") || has("macunix")
-    set gfn=IBM\ Plex\ Mono:h14,Hack:h14,Source\ Code\ Pro:h15,Menlo:h15
+    set gfn=JetBrains\ Mono\ NL:h13,JetBrains\ Mono:h13,Hack:h13,IBM\ Plex\ Mono:h13,Source\ Code\ Pro:h14,Menlo:h15
 elseif has("win16") || has("win32") || has("win64")
-    set gfn=IBM\ Plex\ Mono:h14,Source\ Code\ Pro:h12,Bitstream\ Vera\ Sans\ Mono:h11
+    set gfn=JetBrains\ Mono\ NL:h13,JetBrains\ Mono:h13,Hack:h13,IBM\ Plex\ Mono:h13,Source\ Code\ Pro:h12,Bitstream\ Vera\ Sans\ Mono:h11
 elseif has("gui_gtk2") || has("gui_gtk3") || has("linux")
-    set gfn=IBM\ Plex\ Mono\ 14,Hack\ 14,Source\ Code\ Pro\ 12,Bitstream\ Vera\ Sans\ Mono\ 11
+    set gfn=JetBrains\ Mono\ NL\ 13,JetBrains\ Mono\ 13,Hack\ 13,IBM\ Plex\ Mono\ 13,Source\ Code\ Pro\ 12,Bitstream\ Vera\ Sans\ Mono\ 11
 elseif has("unix")
-    set gfn=Monospace\ 11
+    set gfn=JetBrains\ Mono\ NL\ 13,Hack\ 13,Monospace\ 11
 endif
 
 " Disable scrollbars (real hackers don't use scrollbars for navigation!)

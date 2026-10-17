@@ -33,4 +33,9 @@ if command -v vim >/dev/null 2>&1; then
     vim -es -u "$HOME/.vimrc" -c "helptags ALL" -c "q" 2>/dev/null || true
 fi
 
+# Install coding fonts (JetBrains Mono NL, Hack) to ~/.local/share/fonts
+if [ -f "${REPO_DIR}/install_fonts.sh" ]; then
+    "${REPO_DIR}/install_fonts.sh" || true
+fi
+
 echo "Installed the Ultimate Vim configuration successfully! Enjoy :-)"
