@@ -30,10 +30,16 @@ catch
 endtry
 EOF
 
-# Initialize my_configs.vim from template if not present
+# Initialize my_configs.vim from template if not present, or patch legacy winnr('h')
 if [ ! -f "${REPO_DIR}/my_configs.vim" ] && [ -f "${REPO_DIR}/my_configs.vim.template" ]; then
     cp "${REPO_DIR}/my_configs.vim.template" "${REPO_DIR}/my_configs.vim"
     echo "Initialized ${REPO_DIR}/my_configs.vim from my_configs.vim.template"
+elif [ -f "${REPO_DIR}/my_configs.vim" ]; then
+    if grep -q "winnr('h')" "${REPO_DIR}/my_configs.vim" 2>/dev/null; then
+        sed -i.bak "s/winnr('h')/1/g" "${REPO_DIR}/my_configs.vim" 2>/dev/null || sed -i "" "s/winnr('h')/1/g" "${REPO_DIR}/my_configs.vim" 2>/dev/null || true
+        rm -f "${REPO_DIR}/my_configs.vim.bak"
+        echo "Auto-patched legacy winnr('h') in ${REPO_DIR}/my_configs.vim for Vim 8.0 compatibility"
+    fi
 fi
 
 # Generate documentation tags once after installation

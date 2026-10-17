@@ -30,6 +30,9 @@ This document records all modifications, bug fixes, and architectural adjustment
     ```vim
     let l:is_tree_win = (exists('g:NERDTreeWinPos') && g:NERDTreeWinPos ==# 'right') ? (winnr() == winnr('$')) : (winnr() == 1)
     ```
+  * **Automatic Self-Healing for Existing Installations**:
+    * Because `my_configs.vim` is untracked (in `.gitignore`), running `git pull` does not modify an already-existing local configuration file.
+    * Added an automatic self-healing routine to tracked `vimrcs/extended.vim` and the install scripts: on startup, Vim automatically detects and replaces any legacy unpatched `winnr('h')` in local `my_configs.vim` with `1`, curing legacy errors transparently without manual intervention.
 
 ---
 

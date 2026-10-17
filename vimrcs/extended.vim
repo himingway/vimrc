@@ -42,6 +42,23 @@ augroup vimrc_myconfigs
     execute 'autocmd BufWritePost ' . fnameescape(s:vim_runtime . '/my_configs.vim') . ' nested source ' . fnameescape(s:vim_runtime . '/my_configs.vim')
 augroup END
 
+" Auto-heal legacy winnr('h') in local untracked my_configs.vim for Vim 8.0 compatibility
+for s:cfg_candidate in [s:vim_runtime . '/my_configs.vim', expand('~/.vim_runtime/my_configs.vim')]
+    if filereadable(s:cfg_candidate)
+        let s:cfg_lines = readfile(s:cfg_candidate)
+        let s:cfg_modified = 0
+        for s:cfg_i in range(len(s:cfg_lines))
+            if s:cfg_lines[s:cfg_i] !~ '^\s*"' && s:cfg_lines[s:cfg_i] =~# "winnr('h')"
+                let s:cfg_lines[s:cfg_i] = substitute(s:cfg_lines[s:cfg_i], "winnr('h')", "1", "g")
+                let s:cfg_modified = 1
+            endif
+        endfor
+        if s:cfg_modified
+            call writefile(s:cfg_lines, s:cfg_candidate)
+        endif
+    endif
+endfor
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Turn persistent undo on 
