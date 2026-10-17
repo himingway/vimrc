@@ -90,10 +90,12 @@ command! W execute ':w!'
 " Fast save with Space key in normal mode (ergonomic and conflict-free)
 nnoremap <Space> :update<CR>
 
-" Ctrl-S save (:update writes only when buffer is modified)
-nnoremap <C-s> :update<CR>
-inoremap <C-s> <C-O>:update<CR>
-vnoremap <C-s> <Esc>:update<CR>gv
+" Ctrl-S is disabled by default to prevent the notorious Linux terminal XOFF freeze trap
+" and preserve vim-multiple-cursors keymap. Use <Space> or ,w instead.
+" If you only use gVim and prefer Ctrl-S, uncomment the lines below:
+" nnoremap <C-s> :update<CR>
+" inoremap <C-s> <C-O>:update<CR>
+" vnoremap <C-s> <Esc>:update<CR>gv
 
 " System clipboard interaction
 vnoremap <leader>y "+y
