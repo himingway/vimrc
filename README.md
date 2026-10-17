@@ -13,18 +13,49 @@ There are two versions:
 
 I would, of course, recommend using the awesome version.
 
+---
+
+## ⚡ Updates
+
+### Latest Major Enhancements (IC/FPGA Design & Vim 8.0 Hardened)
+
+* **Chip Design & Hardware Description Support**:
+  * Native syntax highlighting and smart indent for **Verilog, SystemVerilog, SDC/XDC, UPF**, and EDA simulation/synthesis logs.
+  * Instant cursor-based **Radix & Bit-width Converter** (Hex ↔ Dec ↔ Bin ↔ Bit-width via `,rv`, `,rx`, `,rd`, `,rb`).
+  * Block boundary navigation (`%`) with `matchit` (`begin` ↔ `end`, `module` ↔ `endmodule`, `fork` ↔ `join`).
+  * Automated ASIC/FPGA header generation (`,vh`) with dynamic `$USER` and timestamp detection.
+* **Smart Completion & SuperTab Integration**:
+  * Integrated `ervandew/supertab` (pinned at v2.1 for Vim 8.0 compatibility).
+  * Context-aware Tab completion: expands snipMate snippets (`mod<Tab>`, `alw<Tab>`), completes directory paths after `/`, and performs buffer keyword completion (`<C-n>`) with menu navigation.
+* **Full-Featured Commenting (`preservim/nerdcommenter`)**:
+  * Upgraded from minimal commentary to feature-rich NERDCommenter.
+  * Native support for line toggle (`,c<Space>` / `gc`), multi-line block commenting (`,cm`), sexy doc banners (`,cs`), and yank-and-comment (`,cy`).
+  * Remapped legacy Cope to `,cq` to keep `,cc` exclusively for commenting.
+* **Modern Interface & Navigation**:
+  * **Interactive Terminal** (`voldikss/vim-floaterm`): Toggle floating or split terminal with `<F12>` or `,tt`.
+  * **Buffer Tabs** (`ap/vim-buftabline`): Clean top tabline displaying open buffers (`set stal=2`), optimized for low latency over remote X11/VNC/SSH.
+  * **Code Outline** (`majutsushi/tagbar`): Press `<F4>` to inspect module hierarchies, tasks, and functions.
+  * **High-Speed Fuzzy Search** (`Yggdroot/LeaderF`): Fast file search (`,ff`), buffer switching (`,fb`), and Ripgrep (`,fg`) with Nerd Font devicons.
+* **Rock-Solid Vim 8.0 Compatibility (RHEL 8 / CentOS 8)**:
+  * Eliminated all `BufEnter` autocommand traps (`winnr('h')` E15 errors, LeaderF MRU `<afile>` E495 errors, and `cpoptions` line-continuation E33 errors).
+  * Migrated from legacy pathogen to native Vim 8 package architecture (`pack/vendor/start/`).
+  * Fully documented in [VIM8_COMPATIBILITY.md](VIM8_COMPATIBILITY.md).
+* **English Custom Configuration Template**:
+  * Provided `my_configs.vim.template` with clear English comments, auto-initialized on install.
+
+---
 
 ## How to install the Awesome version?
 ### Install for your own user only
 The awesome version includes a lot of great plugins, configurations and color schemes that make Vim a lot better. To install it simply do following from your terminal:
 
-	git clone --depth=1 https://github.com/amix/vimrc.git ~/.vim_runtime
+	git clone --depth=1 https://github.com/himingway/vimrc.git ~/.vim_runtime
 	sh ~/.vim_runtime/install_awesome_vimrc.sh
 	
 ### Install for multiple users
 To install for multiple users, the repository needs to be cloned to a location accessible for all the intended users.
 
-	git clone --depth=1 https://github.com/amix/vimrc.git /opt/vim_runtime
+	git clone --depth=1 https://github.com/himingway/vimrc.git /opt/vim_runtime
 	sh /opt/vim_runtime/install_awesome_parameterized.sh /opt/vim_runtime user0 user1 user2
 	# to install for all users with home directories, note that root will not be included
 	sh /opt/vim_runtime/install_awesome_parameterized.sh /opt/vim_runtime --all
@@ -46,7 +77,7 @@ The basic version is just one file and no plugins. Just copy [basic.vim](https:/
 
 The basic version is useful to install on remote servers where you don't need many plugins, and you don't do many edits.
 
-	git clone --depth=1 https://github.com/amix/vimrc.git ~/.vim_runtime
+	git clone --depth=1 https://github.com/himingway/vimrc.git ~/.vim_runtime
 	sh ~/.vim_runtime/install_basic_vimrc.sh
 
 
@@ -62,14 +93,13 @@ If you have vim aliased as `vi` instead of `vim`, make sure to either alias it: 
 
 ## How to update to latest version?
 
-Just do a git rebase!
-
+To update your configuration to the latest version:
 
     cd ~/.vim_runtime
-    git reset --hard
-    git clean -d --force
     git pull --rebase
-    python update_plugins.py  # use python3 if python is unavailable
+    sh install_awesome_vimrc.sh
+
+> **Note**: Your custom settings in `~/.vim_runtime/my_configs.vim` will be safely preserved and never overwritten during updates.
 
 ## Some screenshots
 
@@ -88,25 +118,31 @@ Distraction free mode using [goyo.vim](https://github.com/junegunn/goyo.vim) and
 
 I recommend reading the docs of these plugins to understand them better. Each plugin provides a much better Vim experience!
 
-* [ack.vim](https://github.com/mileszs/ack.vim): Vim plugin for `the_silver_searcher` (ag) or ack -- a wicked fast grep
-* [bufexplorer.zip](https://github.com/vim-scripts/bufexplorer.zip): Quickly and easily switch between buffers. This plugin can be opened with `<leader+o>`
-* [ctrlp.vim](https://github.com/ctrlpvim/ctrlp.vim): Fuzzy file, buffer, mru and tag finder. It's mapped to `<Ctrl+F>`
-* [goyo.vim](https://github.com/junegunn/goyo.vim) and [vim-zenroom2](https://github.com/amix/vim-zenroom2): 
+* [LeaderF](https://github.com/Yggdroot/LeaderF): Asynchronous fuzzy finder for files, buffers, mrus, and ripgrep with Nerd Font devicons (mapped to `<leader>ff`, `<leader>fb`, `<leader>fg`)
+* [supertab](https://github.com/ervandew/supertab): Context-aware Tab completion for snippets, file paths, and buffer keywords
+* [nerdcommenter](https://github.com/preservim/nerdcommenter): Powerful multi-language code commenter (mapped to `,c<Space>`, `,cc`, `,cu`, `,cm`, `,cs`, `,cy`, and `gc`)
+* [tagbar](https://github.com/majutsushi/tagbar): Code structure and ctags outline viewer (mapped to `<F4>`)
+* [vim-floaterm](https://github.com/voldikss/vim-floaterm): Terminal drawer inside Vim with fallback for Vim 8.0 (mapped to `<F12>` and `<leader>tt`)
+* [vim-buftabline](https://github.com/ap/vim-buftabline): Lightweight buffer tabs in top tabline (`set stal=2`), ultra-fast over SSH/VNC
+* [verilog_systemverilog.vim](https://github.com/vhda/verilog_systemverilog.vim): Complete syntax, indentation, and navigation for Verilog/SystemVerilog
+* [vim-dirdiff](https://github.com/will133/vim-dirdiff): Interactive directory diffing and synchronization
+* [ryanoasis/vim-devicons](https://github.com/ryanoasis/vim-devicons): Nerd Font developer file icons for LeaderF and Lightline
 * [lightline.vim](https://github.com/itchyny/lightline.vim): A light and configurable statusline/tabline for Vim
 * [NERD Tree](https://github.com/preservim/nerdtree): A tree explorer plugin for vim
 * Built-in Packages (`:help packages`): Native Vim package management with zero overhead, fully compatible with Vim 8 and Vim 9
 * [ale](https://github.com/dense-analysis/ale): Syntax and lint checking for vim (ALE requires NeoVim >= 0.2.0 or Vim 8 with +timers +job +channel)
-* [vim-commentary](https://github.com/tpope/vim-commentary): Comment stuff out.  Use `gcc` to comment out a line (takes a count), `gc` to comment out the target of a motion. `gcu` uncomments a set of adjacent commented lines
+* [bufexplorer.zip](https://github.com/vim-scripts/bufexplorer.zip): Quickly and easily switch between buffers. This plugin can be opened with `<leader+o>`
+* [ctrlp.vim](https://github.com/ctrlpvim/ctrlp.vim): Fuzzy file, buffer, mru and tag finder. It's mapped to `<Ctrl+F>`
+* [ack.vim](https://github.com/mileszs/ack.vim): Vim plugin for `the_silver_searcher` (ag) or ack -- a wicked fast grep
+* [goyo.vim](https://github.com/junegunn/goyo.vim) and [vim-zenroom2](https://github.com/amix/vim-zenroom2): Remove all clutter and focus only on the essential
 * [vim-expand-region](https://github.com/terryma/vim-expand-region): Allows you to visually select increasingly larger regions of text using the same key combination
 * [vim-fugitive](https://github.com/tpope/vim-fugitive): A Git wrapper so awesome, it should be illegal
 * [vim-indent-object](https://github.com/michaeljsmith/vim-indent-object): Defines a new text object representing lines of code at the same indent level. Useful for python/vim scripts
-* [vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors): Sublime Text style multiple selections for Vim, CTRL+N is remapped to CTRL+S (due to YankRing)
+* [vim-multiple-cursors](https://github.com/terryma/vim-multiple-cursors): Sublime Text style multiple selections for Vim (mapped to `<C-n>`)
 * [vim-yankstack](https://github.com/maxbrunsfeld/vim-yankstack): Maintains a history of previous yanks, changes and deletes
-* [vim-zenroom2](https://github.com/amix/vim-zenroom2) Remove all clutter and focus only on the essential. Similar to iA Writer or Write Room
-* [gist-vim](https://github.com/mattn/gist-vim) Easily create gists from Vim using the `:Gist` command
-* [vim-indent-guides](https://github.com/nathanaelkane/vim-indent-guides) Is a plugin for visually displaying indent levels in Vim
-* [editorconfig-vim](https://github.com/editorconfig/editorconfig-vim) EditorConfig helps maintain consistent coding styles for multiple developers working on the same project across various editors and IDEs
-* [copilot.vim](https://github.com/github/copilot.vim) Plugin for GitHub Copilot (AI autocompletion FTW 😅)
+* [gist-vim](https://github.com/mattn/gist-vim): Easily create gists from Vim using the `:Gist` command
+* [vim-indent-guides](https://github.com/nathanaelkane/vim-indent-guides): A plugin for visually displaying indent levels in Vim
+* [editorconfig-vim](https://github.com/editorconfig/editorconfig-vim): EditorConfig helps maintain consistent coding styles for multiple developers working on the same project across various editors and IDEs
 
 
 ## Included color schemes
@@ -388,7 +424,7 @@ Can be used to execute code written in C, C++, Java, Python, Go, Octave, Bash sc
 Query `:help cope` if you are unsure what cope is. It's super useful!
 
 When you search with `Ack.vim`, display your results in cope by doing:
-`<leader>cc`
+`<leader>cq`
 
 To go to the next search result do:
 `<leader>n`
@@ -398,7 +434,7 @@ To go to the previous search results do:
 
 Cope mappings:
 ```vim
-map <leader>cc :botright cope<cr>
+map <leader>cq :botright cope<cr>
 map <leader>co ggVGy:tabnew<cr>:set syntax=qf<cr>pgg
 map <leader>n :cn<cr>
 map <leader>p :cp<cr>
