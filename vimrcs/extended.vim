@@ -19,6 +19,11 @@ elseif has("unix")
     set gfn=JetBrainsMonoNL\ Nerd\ Font\ Mono\ 13,Hack\ Nerd\ Font\ Mono\ 13,Monospace\ 11
 endif
 
+" Load matchit (allows % to jump between begin/end, module/endmodule, class/endclass, `ifdef/`endif)
+if !exists('g:loaded_matchit') && findfile('macros/matchit.vim', &runtimepath) !=# ''
+    runtime macros/matchit.vim
+endif
+
 " Disable scrollbars (real hackers don't use scrollbars for navigation!)
 set guioptions-=r
 set guioptions-=R
