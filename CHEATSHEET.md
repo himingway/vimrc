@@ -21,6 +21,7 @@
 | **,rv** / **,cv** | Normal / Visual | **【进制与位宽转换】查看 Hex/Dec/Bin/位宽** | 寄存器配置、地址偏移、掩码计算必备 |
 | **,c<Space>** 或 **gc** | Normal / Visual | **【智能注释切换】单行/选区一键注释与解开** | 自动识别 Verilog/SV/TCL/Perl/Python 语法 |
 | **,cy** | Normal / Visual | **【先复制备份再注释】修改电路逻辑保命神器** | 自动复制选中代码到剪贴板并就地注释原代码 |
+| **Tab** / **Shift + Tab** | Insert | **【万能 TAB 智能自动补全】一键多能** | 模板展开 / 信号与变量词频补全 / 路径补全 / 菜单选词 |
 
 ---
 
@@ -222,6 +223,20 @@
 * **`+` / `_` 智能范围扩散扩选（Expand Region）**：
   * 光标停在表达式内，按 **`+`** 逐步向外智能扩大选中范围（词 → 引号内 → 括号内 → 整个语句 → 整个代码块）；
   * 按 **`_`** 逐步向内收缩范围。
+
+### 8.4 ⌨️ 万能 TAB 智能自动补全 (SuperTab + snipMate)
+深度融合了代码模板引擎与上下文补全引擎，将所有插入模式补全统一交由 **`<Tab>`** 智能调度：
+* **常用硬件模板极速展开（Snippets）**：
+  * Verilog / SystemVerilog：输入 `mod`<kbd>Tab</kbd>（模块模板）、`alw`<kbd>Tab</kbd>（always 块）、`case`<kbd>Tab</kbd>、`ife`<kbd>Tab</kbd>（if-else）、`rep`<kbd>Tab</kbd>（repeat）等瞬间展开。
+  * 展开后按 **`<Tab>`** 顺序跳至下一个参数占位符，按 **`<Shift-Tab>`** 跳回上一个参数。
+* **信号名 / 变量名极速补全（Context Keyword Completion）**：
+  * 输入任意信号前缀（如 `rx_d`<kbd>Tab</kbd>、`data_`<kbd>Tab</kbd>、`u_axi_`<kbd>Tab</kbd>），自动检索当前文件、已打开 Buffer、Tags 符号表，自动弹出补全菜单并优先向前选择。
+* **文件路径感知补全（Path Completion）**：
+  * 在输入路径符号后（如 `/`、`../`）按 `<Tab>`，自动感知并补全操作系统目录与文件名。
+* **下拉菜单流畅选词**：
+  * 候选词菜单弹出时：按 **`<Tab>`** 向下选择、按 **`<Shift-Tab>`** 向上选择、按 **`<Enter>`** 立即确认上屏。
+* **空白排版自适应**：
+  * 在行首或空格后按 `<Tab>` 正常插入缩进，绝不误触干扰排版。
 
 ---
 

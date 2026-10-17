@@ -82,8 +82,10 @@ let g:user_zen_mode='a'
 " => snipMate (beside <TAB> support <CTRL-j>)
 """"""""""""""""""""""""""""""
 ino <C-j> <C-r>=snipMate#TriggerSnippet()<cr>
-snor <C-j> <esc>i<right><C-r>=snipMate#TriggerSnippet()<cr>
-let g:snipMate = { 'snippet_version' : 1 }
+if !exists('g:snipMate')
+    let g:snipMate = {}
+endif
+let g:snipMate.snippet_version = 1
 
 
 """"""""""""""""""""""""""""""
@@ -454,3 +456,20 @@ let g:NERDToggleCheckAllLines = 1
 " Map 'gc' in normal and visual mode to NERDCommenterToggle for quick toggle
 nmap gc <Plug>NERDCommenterToggle
 vmap gc <Plug>NERDCommenterToggle
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => SuperTab (All-in-one Smart Tab completion)
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Use context-aware completion:
+" - After path '/', auto-completes filenames (<C-x><C-f>)
+" - After '.', '::', '->', auto-completes omni/user methods
+" - Otherwise, auto-completes buffer & project keywords downwards (<C-n>)
+let g:SuperTabDefaultCompletionType = "context"
+let g:SuperTabContextDefaultCompletionType = "<c-n>"
+
+" Close preview scratch window automatically when completion popup menu closes
+let g:SuperTabClosePreviewOnPopupClose = 1
+
+" Retain completion mode only for current completion
+let g:SuperTabRetainCompletionDuration = 'completion'

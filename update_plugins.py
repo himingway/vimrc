@@ -66,12 +66,15 @@ tagbar https://github.com/preservim/tagbar
 vim-dirdiff https://github.com/will133/vim-dirdiff
 vim-log-highlighting https://github.com/MTDL9/vim-log-highlighting
 vim-buftabline https://github.com/ap/vim-buftabline
+supertab https://github.com/ervandew/supertab
 """.strip()
 
 SOURCE_DIR = path.join(path.dirname(__file__), "pack", "vendor", "start")
 
 # Plugins locked at specific versions for backward compatibility (name: reason)
-LOCKED_PLUGINS = {}
+LOCKED_PLUGINS = {
+    "supertab": "Locked at v2.1 for Vim 8.0 compatibility (master HEAD requires Vim >= 9.0)",
+}
 
 
 def download_zip(github_url):
